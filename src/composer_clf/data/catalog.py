@@ -1,4 +1,6 @@
 """Composer labels, piece IDs and duplicate removal for both datasets."""
+import argparse
+import hashlib
 import re
 from pathlib import Path
 
@@ -56,6 +58,22 @@ def piece_id(filename: str) -> str:
     return f"{composer}:{name or 'unnamed'}"
 
 
+def _repo_path(p: Path) -> str:
+    """Repo-relative path when inside the repo, else the absolute path."""
+    p = Path(p).resolve()
+    return paths.relative(p) if p.is_relative_to(paths.ROOT) else str(p)
+
+
+def build_hf_catalog(raw_dir: Path) -> pd.DataFrame:
+    rows = []
+    for p in sorted(Path(raw_dir).glob("*.mid*")):
+        composer, _ = split_name(p.name)
+        rows.append({"path": _repo_path(p), "filename": p.name, "composer": composer,
+                     "piece_id": piece_id(p.name), "dedup_key": dedup_key(p.name),
+                     "md5": hashlib.md5(p.read_bytes()).hexdigest()})
+    return pd.DataFrame(rows)
+
+
 def dedup_key(filename: str) -> str:
     """Composer plus the normalized last name segment; renamed copies collide."""
     composer, segments = split_name(filename)
@@ -87,12 +105,34 @@ def build_maestro_catalog(maestro_dir: Path, min_performances: int = 50) -> pd.D
     meta = meta[~meta.canonical_composer.str.contains("/")]
     counts = meta.canonical_composer.value_counts()
     meta = meta[meta.canonical_composer.isin(counts.index[counts >= min_performances])]
-    base = Path(maestro_dir).resolve()
-    rel = [paths.relative(base / f) if (base / f).is_relative_to(paths.ROOT) else str(base / f)
-           for f in meta.midi_filename]
+    base = Path(maestro_dir)
     return pd.DataFrame({
-        "path": rel,
+        "path": [_repo_path(base / f) for f in meta.midi_filename],
         "composer": meta.canonical_composer.to_numpy(),
         "piece_id": (meta.canonical_composer + ":" + meta.canonical_title).to_numpy(),
         "split": meta.split.map(MAESTRO_SPLITS).to_numpy(),
     })
+
+
+def main(argv=None) -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--min-files", type=int, default=50)
+    parser.add_argument("--min-pieces", type=int, default=5)
+    args = parser.parse_args(argv)
+    paths.DATA_PROCESSED.mkdir(parents=True, exist_ok=True)
+
+    raw = build_hf_catalog(paths.HF_DIR)
+    deduped = deduplicate(raw)
+    kept, summary = select_composers(deduped, args.min_files, args.min_pieces)
+    kept.to_csv(paths.DATA_PROCESSED / "hf_catalog.csv", index=False)
+    summary.to_csv(paths.DATA_PROCESSED / "hf_composer_summary.csv")
+    print(f"HF: {len(raw)} files, {len(deduped)} after dedup, {len(kept)} kept")
+    print(summary.head(25).to_string())
+
+    maestro = build_maestro_catalog(paths.MAESTRO_DIR)
+    maestro.to_csv(paths.DATA_PROCESSED / "maestro_catalog.csv", index=False)
+    print(pd.crosstab(maestro.composer, maestro.split, margins=True).to_string())
+
+
+if __name__ == "__main__":
+    main()

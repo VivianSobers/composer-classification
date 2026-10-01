@@ -1,7 +1,9 @@
+import hashlib
+
 import pandas as pd
 import pytest
 
-from composer_clf.data.catalog import build_maestro_catalog, dedup_key, deduplicate, normalize_composer, piece_id, select_composers
+from composer_clf.data.catalog import build_hf_catalog, build_maestro_catalog, dedup_key, deduplicate, normalize_composer, piece_id, select_composers
 
 
 def test_aliases():
@@ -89,3 +91,14 @@ def test_maestro_catalog(tmp_path):
     assert list(cat.composer) == ["A", "A", "A"]
     assert list(cat.split) == ["train", "dev", "test"]
     assert cat.piece_id.iloc[0] == "A:t1"
+
+
+def test_build_hf_catalog_reads_files(midi_factory):
+    a = midi_factory("haendel-messiah_oratorio_hwv056-mesiah46.mid")
+    midi_factory("scarlatti-k054.mid", program=6)
+    cat = build_hf_catalog(a.parent)
+    assert list(cat.columns) == ["path", "filename", "composer", "piece_id", "dedup_key", "md5"]
+    row = cat.set_index("filename").loc[a.name]
+    assert row.composer == "handel" and row.piece_id == "handel:hwv56"
+    assert row.md5 == hashlib.md5(a.read_bytes()).hexdigest()
+    assert len(cat) == 2
