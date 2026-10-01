@@ -68,3 +68,14 @@ def test_plot_confusion(tmp_path):
 
     _fake_exp(tmp_path, "e1_composers", ["lightgbm"])
     assert _is_png(plot_confusion(tmp_path, tmp_path / "fig.png"))
+
+
+def test_plot_ablation(tmp_path):
+    from composer_clf.report import plot_ablation
+
+    _fake_exp(tmp_path, "e1_composers", ["lightgbm"])
+    for g in ("rhythm", "melodic", "instrumentation"):
+        _fake_exp(tmp_path, f"e3_composer_{g}", ["lightgbm"], acc=0.5)
+    for g in ("all", "rhythm"):
+        _fake_exp(tmp_path, f"e3_era_{g}", ["lightgbm"], acc=0.8)
+    assert _is_png(plot_ablation(tmp_path, tmp_path / "fig.png"))

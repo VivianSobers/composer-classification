@@ -163,5 +163,27 @@ def plot_confusion(results_dir: Path, out: Path, exp: str = "e1_composers", mode
     return out
 
 
+GROUP_NAMES = {"all": "All features", "rhythm": "Rhythm", "melodic": "Melodic intervals",
+               "vertical": "Vertical intervals", "texture": "Texture", "instrumentation": "Instrumentation",
+               "no_instrumentation": "All but instrumentation"}
+
+
+def plot_ablation(results_dir: Path, out: Path) -> Path:
+    """LightGBM test accuracy per feature group, for the composer task and the era task."""
+    results_dir = Path(results_dir)
+    sources = {"Composer task": lambda g: "e1_composers" if g == "all" else f"e3_composer_{g}",
+               "Era task": lambda g: f"e3_era_{g}"}
+    rows = []
+    for group, label in GROUP_NAMES.items():
+        for series, exp_of in sources.items():
+            summary = results_dir / exp_of(group) / "summary.csv"
+            if summary.exists():
+                r = pd.read_csv(summary).set_index("model").loc["lightgbm"]
+                rows.append({"label": label, "series": series, "mean": r.test_accuracy_mean,
+                             "std": r.test_accuracy_std})
+    return _dot_plot(pd.DataFrame(rows), list(sources), "LightGBM accuracy by feature group",
+                     "Test accuracy, mean ± std over seeds", out)
+
+
 if __name__ == "__main__":
     print(write_tables())
