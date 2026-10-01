@@ -50,3 +50,20 @@ def test_crashed_shard_retried_with_more_memory(tmp_path, midi_factory):
                                       xmx="2m", retry_xmx="1g")  # 2 MB heap: the JVM cannot start
     assert failed == []
     assert list(feats["path"]) == [str(f) for f in files]
+
+
+@pytest.mark.slow
+@needs_jar
+def test_resume_only_runs_missing_files(tmp_path, midi_factory):
+    from composer_clf.features.jsymbolic import extract_jsymbolic
+
+    files = [midi_factory("a.mid"), midi_factory("b.mid")]
+    work = tmp_path / "work"
+    _, failed = extract_jsymbolic(files, work, n_shards=1, workers=1, xmx="2m", retry_xmx="2m")
+    assert failed == [str(f) for f in files]          # JVM cannot start: nothing extracted
+    feats, failed = extract_jsymbolic(files, work, n_shards=1, workers=1, resume=True)
+    assert failed == [] and list(feats["path"]) == [str(f) for f in files]
+    runs_before = sorted(p.name for p in work.iterdir())
+    feats, failed = extract_jsymbolic(files, work, n_shards=1, workers=1, resume=True)
+    assert failed == [] and len(feats) == 2
+    assert sorted(p.name for p in work.iterdir()) == runs_before   # nothing left to do, nothing re-run

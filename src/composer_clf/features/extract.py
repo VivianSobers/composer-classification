@@ -13,6 +13,7 @@ def main(argv=None) -> None:
     parser.add_argument("--extractor", choices=["jsymbolic", "music21"], default="jsymbolic")
     parser.add_argument("--shards", type=int, default=48)
     parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument("--resume", action="store_true", help="reuse files an interrupted run already extracted")
     args = parser.parse_args(argv)
 
     catalog = pd.read_csv(paths.DATA_PROCESSED / f"{args.dataset}_catalog.csv")
@@ -20,7 +21,7 @@ def main(argv=None) -> None:
     if args.extractor == "jsymbolic":
         from composer_clf.features.jsymbolic import extract_jsymbolic
         feats, failed = extract_jsymbolic(files, paths.DATA_PROCESSED / f"work_{args.dataset}",
-                                          n_shards=args.shards, workers=args.workers)
+                                          n_shards=args.shards, workers=args.workers, resume=args.resume)
     else:
         from composer_clf.features.music21_feats import extract_music21
         feats, failed = extract_music21(files, n_jobs=args.workers)
