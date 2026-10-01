@@ -50,11 +50,11 @@ Run the tests with `.venv/bin/pytest`. The tests that start jSymbolic are marked
 
 ## Running the experiments
 
-Extract jSymbolic features for both datasets. Each run splits the files into shards and runs several Java processes at once. On a 16-core laptop with 14 GB of RAM, four workers was the most we could run; the Hugging Face set then takes roughly two hours. Files that jSymbolic can't read are listed in `data/processed/<dataset>_jsymbolic_failed.txt`.
+Extract jSymbolic features for both datasets. Each run splits the files into shards and runs several Java processes at once. If one file runs out of Java heap, jSymbolic drops the whole shard, so those files are retried one at a time with a bigger heap. On our 16-core laptop with 14 GB of RAM we could only afford four 1 GB workers, and the Hugging Face set took a little over two hours. The MAESTRO performances are longer and needed 4 GB heaps, so we ran them on a 26-core server. If a run is interrupted, `--resume` reuses everything already extracted. Files that jSymbolic can't read even then are listed in `data/processed/<dataset>_jsymbolic_failed.txt` (8 of the 2,997 Hugging Face files, none of the MAESTRO files).
 
 ```bash
 .venv/bin/python -m composer_clf.features.extract --dataset hf
-.venv/bin/python -m composer_clf.features.extract --dataset maestro --shards 48 --workers 8
+.venv/bin/python -m composer_clf.features.extract --dataset maestro --workers 8 --xmx 4g --retry-xmx 8g --retry-workers 8
 ```
 
 Every experiment writes one folder per model and seed under `results/<experiment>/`, holding the full config (including the git commit and library versions), the metrics, the dev-set tuning table and the test predictions. Each model gets the same eight hyperparameter settings, the best one on the dev set is kept, and the test set is scored once. Seeds 0 to 4 are used unless you pass `--seeds`.
