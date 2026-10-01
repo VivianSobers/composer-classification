@@ -1,9 +1,7 @@
 import numpy as np
 import pytest
 
-from composer_clf.models import GRIDS, build
-
-IMPLEMENTED = ["lightgbm", "softmax", "svm", "lda", "knn"]
+from composer_clf.models import GRIDS, MODEL_NAMES, build
 
 
 def toy_data():
@@ -13,12 +11,17 @@ def toy_data():
     return X, y
 
 
-@pytest.mark.parametrize("name", IMPLEMENTED)
+def test_every_model_has_a_grid():
+    assert set(GRIDS) == set(MODEL_NAMES) == {"lightgbm", "softmax", "svm", "lda", "knn", "mlp"}
+
+
+@pytest.mark.parametrize("name", MODEL_NAMES)
 def test_grid_has_eight_configs(name):
     assert len(GRIDS[name]) == 8
 
 
-@pytest.mark.parametrize("name", IMPLEMENTED)
+@pytest.mark.filterwarnings("ignore::sklearn.exceptions.ConvergenceWarning")
+@pytest.mark.parametrize("name", MODEL_NAMES)
 def test_every_config_fits_and_predicts(name):
     X, y = toy_data()
     for params in GRIDS[name]:

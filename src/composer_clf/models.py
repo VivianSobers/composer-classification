@@ -5,9 +5,13 @@ from lightgbm import LGBMClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
+
+
+MODEL_NAMES = ("lightgbm", "softmax", "svm", "lda", "knn", "mlp")
 
 
 def _grid(**axes) -> list[dict]:
@@ -20,6 +24,7 @@ GRIDS = {
     "svm": _grid(C=[0.5, 1.0, 2.0, 5.5, 10.0, 20.0, 50.0, 100.0]),
     "lda": _grid(shrinkage=[None, "auto", 0.01, 0.05, 0.1, 0.2, 0.5, 0.9]),
     "knn": _grid(n_neighbors=[1, 3, 5, 7, 11, 15, 21, 31]),
+    "mlp": _grid(alpha=[1e-4, 1e-3, 1e-2, 1e-1], learning_rate_init=[0.01, 0.04]),
 }
 
 
@@ -35,6 +40,9 @@ def _estimator(name: str, params: dict, seed: int):
         return LinearDiscriminantAnalysis(solver="lsqr", **params)
     if name == "knn":
         return KNeighborsClassifier(**params)
+    if name == "mlp":
+        return MLPClassifier(hidden_layer_sizes=(150,), solver="sgd", momentum=0.9, batch_size=50,
+                             max_iter=200, random_state=seed, **params)
     raise ValueError(f"unknown model: {name}")
 
 
