@@ -39,9 +39,14 @@ def main(argv=None):
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--seeds", nargs="+", type=int, default=[0, 1, 2, 3, 4])
     parser.add_argument("--out-root", type=Path, default=paths.RESULTS)
+    parser.add_argument("--device", choices=["auto", "cpu", "cuda"], default="auto",
+                        help="auto uses the GPU when one is visible; cpu keeps a shared GPU free")
+    parser.add_argument("--threads", type=int, default=0, help="CPU threads for torch (0 keeps its default)")
     args = parser.parse_args(argv)
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    if args.threads:
+        torch.set_num_threads(args.threads)
+    device = args.device if args.device != "auto" else ("cuda" if torch.cuda.is_available() else "cpu")
     X, y, split, file_paths, labels = load_rolls(CACHE, CATALOG)
     env = environment(["numpy", "torch", "pretty_midi"])
     names = np.array(labels)
@@ -58,6 +63,7 @@ def main(argv=None):
                    "test_accuracy_ci95": bootstrap_ci(truth["test"], preds["test"], seed=seed)}
         config = {**vars(args), "out_root": portable(args.out_root), "seed": seed, "model": "cnn",
                   "device": torch.cuda.get_device_name() if device == "cuda" else "cpu",
+                  "torch_threads": torch.get_num_threads(),
                   "labels": labels, "split_sizes": {s: int(m.sum()) for s, m in sets.items()},
                   "environment": env}
         # For the CNN the dev search is the per-epoch selection, so the history goes in dev_search.csv.
