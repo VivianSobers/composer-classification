@@ -1,0 +1,9 @@
+config,params,dev_accuracy,dev_macro_f1
+0,"{""n_estimators"": 300, ""reg_lambda"": 1.0, ""learning_rate"": 0.05}",0.8333333333333334,0.6981327677213988
+1,"{""n_estimators"": 300, ""reg_lambda"": 1.0, ""learning_rate"": 0.1}",0.8314176245210728,0.6991001098581912
+2,"{""n_estimators"": 300, ""reg_lambda"": 10.0, ""learning_rate"": 0.05}",0.842911877394636,0.7186453969893462
+3,"{""n_estimators"": 300, ""reg_lambda"": 10.0, ""learning_rate"": 0.1}",0.8333333333333334,0.6975817547827726
+4,"{""n_estimators"": 700, ""reg_lambda"": 1.0, ""learning_rate"": 0.05}",0.8333333333333334,0.6990966278984713
+5,"{""n_estimators"": 700, ""reg_lambda"": 1.0, ""learning_rate"": 0.1}",0.8295019157088123,0.6971647825236506
+6,"{""n_estimators"": 700, ""reg_lambda"": 10.0, ""learning_rate"": 0.05}",0.8314176245210728,0.6969799437724408
+7,"{""n_estimators"": 700, ""reg_lambda"": 10.0, ""learning_rate"": 0.1}",0.8333333333333334,0.6953980656743353
