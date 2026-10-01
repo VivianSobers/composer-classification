@@ -94,3 +94,12 @@ def test_plot_importance(tmp_path):
     pipe = build("lightgbm", {"n_estimators": 20, "reg_lambda": 1.0, "learning_rate": 0.1}, seed=0).fit(X, y)
     joblib.dump({"pipeline": pipe, "feature_columns": [f"Feature_{i}" for i in range(25)]}, tmp_path / "m.joblib")
     assert _is_png(plot_importance(tmp_path / "m.joblib", tmp_path / "fig.png", top=20))
+
+
+def test_plot_maestro_comparison(tmp_path):
+    from composer_clf.report import plot_maestro_comparison
+
+    _fake_exp(tmp_path, "e4_maestro_tabular", ["lightgbm", "svm"])
+    _fake_exp(tmp_path, "e5_cnn_noaug", ["cnn"], acc=0.5)
+    _fake_exp(tmp_path, "e5_cnn_aug10", ["cnn"], acc=0.55)
+    assert _is_png(plot_maestro_comparison(tmp_path, tmp_path / "fig.png"))
