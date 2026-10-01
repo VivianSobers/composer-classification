@@ -7,6 +7,7 @@ import joblib
 import streamlit as st
 
 from composer_clf import paths
+from composer_clf.demo_charts import probability_chart
 from composer_clf.features.jsymbolic import extract_jsymbolic
 from composer_clf.predict import explain
 
@@ -40,5 +41,6 @@ if upload:
             st.error(f"Could not score this file: {err}")
             st.stop()
         st.subheader(f"Prediction: {probs.index[0]} ({probs.iloc[0]:.0%})")
+        st.altair_chart(probability_chart(probs), use_container_width=True, theme=None)
         st.markdown("**Features that pushed the prediction most**")
         st.dataframe(top, hide_index=True)

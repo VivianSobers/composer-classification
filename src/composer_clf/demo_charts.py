@@ -1,0 +1,27 @@
+"""Charts for the demo app."""
+import altair as alt
+import pandas as pd
+
+SERIES = "#2a78d6"      # one series, so one color
+SURFACE = "#fcfcfb"
+INK_SECONDARY = "#52514e"
+INK_MUTED = "#898781"
+GRID = "#e1e0d9"
+BASELINE = "#c3c2b7"
+
+
+def probability_chart(probs: pd.Series, top_k: int = 5) -> alt.Chart:
+    """Horizontal bars of the top composer probabilities, value at each bar tip, hover tooltip."""
+    data = probs.sort_values(ascending=False).head(top_k).rename_axis("composer").reset_index(name="probability")
+    y = alt.Y("composer:N", sort=None, title=None,
+              axis=alt.Axis(labelColor=INK_SECONDARY, ticks=False, domainColor=BASELINE, labelFontSize=13))
+    x = alt.X("probability:Q", scale=alt.Scale(domain=[0, 1]), title=None,
+              axis=alt.Axis(format="%", labelColor=INK_MUTED, gridColor=GRID, domain=False, ticks=False,
+                            tickCount=5))
+    tooltip = [alt.Tooltip("composer:N"), alt.Tooltip("probability:Q", format=".1%")]
+    bars = alt.Chart(data).mark_bar(color=SERIES, size=20, cornerRadiusEnd=4).encode(x=x, y=y, tooltip=tooltip)
+    labels = alt.Chart(data).mark_text(align="left", dx=6, color=INK_SECONDARY, fontSize=12).encode(
+        x=x, y=y, text=alt.Text("probability:Q", format=".0%"))
+    return (alt.layer(bars, labels)
+            .properties(height=36 * len(data), background=SURFACE)
+            .configure_view(stroke=None))
