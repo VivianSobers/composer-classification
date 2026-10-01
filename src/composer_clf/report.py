@@ -104,5 +104,20 @@ def plot_model_comparison(results_dir: Path, out: Path, exp: str = "e1_composers
                      f"Mean ± std over {int(s.n_seeds.max())} seeds", out)
 
 
+def plot_leakage(results_dir: Path, out: Path, grouped: str = "e1_composers", random: str = "e2_random_split") -> Path:
+    """Test accuracy with piece-grouped vs random file splits, for the models run in both."""
+    g = pd.read_csv(Path(results_dir) / grouped / "summary.csv").set_index("model")
+    r = pd.read_csv(Path(results_dir) / random / "summary.csv").set_index("model")
+    rows = []
+    for model in r.index.intersection(g.index):
+        name = MODEL_NAMES.get(model, model)
+        rows.append({"label": name, "series": "Grouped by piece", "mean": g.loc[model, "test_accuracy_mean"],
+                     "std": g.loc[model, "test_accuracy_std"]})
+        rows.append({"label": name, "series": "Random by file", "mean": r.loc[model, "test_accuracy_mean"],
+                     "std": r.loc[model, "test_accuracy_std"]})
+    return _dot_plot(pd.DataFrame(rows), ["Grouped by piece", "Random by file"],
+                     "Test accuracy under two ways of splitting the data", "Test accuracy, mean ± std over seeds", out)
+
+
 if __name__ == "__main__":
     print(write_tables())

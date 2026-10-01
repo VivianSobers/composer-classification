@@ -53,3 +53,11 @@ def test_plot_model_comparison(tmp_path):
 
     _fake_exp(tmp_path, "e1_composers", ["lightgbm", "svm", "knn"])
     assert _is_png(plot_model_comparison(tmp_path, tmp_path / "fig.png"))
+
+
+def test_plot_leakage(tmp_path):
+    from composer_clf.report import plot_leakage
+
+    _fake_exp(tmp_path, "e1_composers", ["lightgbm", "svm", "knn"], acc=0.6)
+    _fake_exp(tmp_path, "e2_random_split", ["lightgbm", "svm"], acc=0.8)
+    assert _is_png(plot_leakage(tmp_path, tmp_path / "fig.png"))
