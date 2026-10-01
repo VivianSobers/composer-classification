@@ -35,8 +35,8 @@ def load_tabular(catalog_csv: Path, features_csv: Path, feature_group: str = "al
     feats = pd.read_csv(features_csv)
     available = [c for c in feats.columns if c != "path" and c not in DROP_FEATURES]
     cols = feature_columns(feature_group, available)
-    df = catalog.merge(feats[["path", *cols]], on="path", how="inner")
-    df[cols] = df[cols].apply(pd.to_numeric, errors="coerce")
+    numeric = feats[cols].apply(pd.to_numeric, errors="coerce")
+    df = catalog.merge(pd.concat([feats[["path"]], numeric], axis=1), on="path", how="inner")
     df = df[~df[cols].isna().any(axis=1)]
     if task == "era":
         df = df.assign(label=df.composer.map(ERA_OF)).dropna(subset=["label"])

@@ -52,3 +52,18 @@ def test_unknown_task(tmp_path):
 
     with pytest.raises(ValueError):
         load_tabular(*write(tmp_path), task="decade")
+
+
+def test_loading_many_columns_does_not_fragment(tmp_path):
+    import warnings
+
+    n = 300
+    pd.DataFrame({"path": ["a.mid", "b.mid"], "composer": ["bach", "chopin"], "piece_id": ["bach:1", "chopin:1"]}
+                 ).to_csv(tmp_path / "cat.csv", index=False)
+    feats = pd.DataFrame(np.ones((2, n)), columns=[f"F_{i}" for i in range(n)])
+    feats.insert(0, "path", ["a.mid", "b.mid"])
+    feats.to_csv(tmp_path / "f.csv", index=False)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", pd.errors.PerformanceWarning)
+        data = load_tabular(tmp_path / "cat.csv", tmp_path / "f.csv")
+    assert data.X.shape == (2, n)
