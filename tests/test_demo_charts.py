@@ -14,3 +14,15 @@ def test_probability_chart_top5_spec():
     assert bars["mark"]["cornerRadiusEnd"] == 4 and bars["mark"]["size"] <= 24
     assert {t["field"] for t in bars["encoding"]["tooltip"]} == {"composer", "probability"}
     assert labels["mark"]["type"] == "text" and labels["mark"]["color"] != "#2a78d6"
+
+
+def test_roll_image_puts_high_pitches_on_top():
+    import numpy as np
+
+    from composer_clf.demo_charts import roll_image
+
+    roll = np.zeros((64, 1536), np.uint8)
+    roll[0, :10] = 127                       # lowest pitch, loudest velocity
+    img = roll_image(roll)
+    assert img.shape == (64, 1536) and img.dtype == np.uint8
+    assert (img[-1, :10] == 254).all() and img[0].sum() == 0

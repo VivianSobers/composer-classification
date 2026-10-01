@@ -1,5 +1,6 @@
 """Charts for the demo app."""
 import altair as alt
+import numpy as np
 import pandas as pd
 
 SERIES = "#2a78d6"      # one series, so one color
@@ -25,3 +26,8 @@ def probability_chart(probs: pd.Series, top_k: int = 5) -> alt.Chart:
     return (alt.layer(bars, labels)
             .properties(height=36 * len(data), background=SURFACE)
             .configure_view(stroke=None))
+
+
+def roll_image(roll: np.ndarray) -> np.ndarray:
+    """Grayscale image of a piano roll: high pitches on top, velocity 0-127 stretched to 0-254."""
+    return (np.flipud(roll).astype(np.uint16) * 2).astype(np.uint8)

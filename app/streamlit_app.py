@@ -7,8 +7,9 @@ import joblib
 import streamlit as st
 
 from composer_clf import paths
-from composer_clf.demo_charts import probability_chart
+from composer_clf.demo_charts import probability_chart, roll_image
 from composer_clf.features.jsymbolic import extract_jsymbolic
+from composer_clf.pianoroll import midi_to_roll
 from composer_clf.predict import explain
 
 MODEL = Path(os.environ.get("COMPOSER_MODEL", paths.MODELS / "lightgbm_hf.joblib"))
@@ -44,3 +45,6 @@ if upload:
         st.altair_chart(probability_chart(probs), use_container_width=True, theme=None)
         st.markdown("**Features that pushed the prediction most**")
         st.dataframe(top, hide_index=True)
+        st.image(roll_image(midi_to_roll(midi)), use_container_width=True,
+                 caption="Piano roll of the first 153.6 s (MIDI pitches 32 to 95, high notes on top), "
+                         "the input format of the CNN")
