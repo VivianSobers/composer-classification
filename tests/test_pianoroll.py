@@ -34,3 +34,23 @@ def test_shift_positive_and_negative():
     back = shift(roll, dx=-5, dy=-2)
     assert (back[:-2, :-5] == roll[2:, 5:]).all()
     assert back[-2:].sum() == 0 and back[:, -5:].sum() == 0
+
+
+def test_blank_width():
+    from composer_clf.pianoroll import blank
+
+    roll = np.ones((64, 1536), np.uint8)
+    out = blank(roll, 760)
+    assert out[:, 711:810].sum() == 0
+    assert out[:, 710].all() and out[:, 810].all()
+    assert roll.all()  # input untouched
+
+
+def test_augment_deterministic_shape():
+    from composer_clf.pianoroll import augment
+
+    roll = np.ones((64, 1536), np.uint8)
+    a = augment(roll, np.random.default_rng(1))
+    b = augment(roll, np.random.default_rng(1))
+    assert a.shape == roll.shape and a.dtype == np.uint8 and (a == b).all()
+    assert a.sum() < roll.sum()  # the blanked strip always removes something

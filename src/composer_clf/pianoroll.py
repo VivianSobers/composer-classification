@@ -24,3 +24,18 @@ def shift(roll: np.ndarray, dx: int, dy: int) -> np.ndarray:
     src_c, dst_c = (slice(0, w - dx), slice(dx, w)) if dx >= 0 else (slice(-dx, w), slice(0, w + dx))
     out[dst_r, dst_c] = roll[src_r, src_c]
     return out
+
+
+def blank(roll: np.ndarray, z: int) -> np.ndarray:
+    """Zero the 99 frames with |j - z| < 50."""
+    out = roll.copy()
+    out[:, z - 49 : z + 50] = 0
+    return out
+
+
+def augment(roll: np.ndarray, rng: np.random.Generator) -> np.ndarray:
+    """The paper's augmentation: random shift, then a blanked strip near the middle."""
+    dx = int(rng.integers(-150, 151))
+    dy = int(rng.integers(-10, 11))
+    z = int(rng.integers(718, 819))
+    return blank(shift(roll, dx, dy), z)
