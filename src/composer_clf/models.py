@@ -4,6 +4,7 @@ from itertools import product
 from lightgbm import LGBMClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
@@ -18,6 +19,7 @@ GRIDS = {
     "softmax": _grid(C=[1e-3, 1e-2, 1e-1, 1.0, 10.0, 100.0, 1e3, 1e4]),
     "svm": _grid(C=[0.5, 1.0, 2.0, 5.5, 10.0, 20.0, 50.0, 100.0]),
     "lda": _grid(shrinkage=[None, "auto", 0.01, 0.05, 0.1, 0.2, 0.5, 0.9]),
+    "knn": _grid(n_neighbors=[1, 3, 5, 7, 11, 15, 21, 31]),
 }
 
 
@@ -31,6 +33,8 @@ def _estimator(name: str, params: dict, seed: int):
         return SVC(kernel="rbf", gamma="auto", random_state=seed, **params)
     if name == "lda":
         return LinearDiscriminantAnalysis(solver="lsqr", **params)
+    if name == "knn":
+        return KNeighborsClassifier(**params)
     raise ValueError(f"unknown model: {name}")
 
 
