@@ -25,3 +25,28 @@ def test_extract_real_files(tmp_path, midi_factory):
     assert failed == []
     assert list(feats["path"]) == [str(f) for f in files]
     assert feats.shape[1] == 1 + 1495
+
+
+@pytest.mark.slow
+@needs_jar
+def test_corrupt_file_dropped_not_misaligned(tmp_path, midi_factory):
+    from composer_clf.features.jsymbolic import extract_jsymbolic
+
+    good = midi_factory("good.mid")
+    bad = tmp_path / "bad.mid"
+    bad.write_bytes(b"not a midi file at all")
+    feats, failed = extract_jsymbolic([bad, good], tmp_path / "work", n_shards=1, workers=1)
+    assert failed == [str(bad)]
+    assert list(feats["path"]) == [str(good)]
+
+
+@pytest.mark.slow
+@needs_jar
+def test_crashed_shard_retried_with_more_memory(tmp_path, midi_factory):
+    from composer_clf.features.jsymbolic import extract_jsymbolic
+
+    files = [midi_factory("a.mid"), midi_factory("b.mid")]
+    feats, failed = extract_jsymbolic(files, tmp_path / "work", n_shards=1, workers=1,
+                                      xmx="2m", retry_xmx="1g")  # 2 MB heap: the JVM cannot start
+    assert failed == []
+    assert list(feats["path"]) == [str(f) for f in files]

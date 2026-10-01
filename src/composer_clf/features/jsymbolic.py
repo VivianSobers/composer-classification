@@ -43,7 +43,7 @@ def _run_batch(jobs: dict[int, Path], work_dir: Path, n_shards: int, workers: in
     return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame(columns=["index"])
 
 
-def extract_jsymbolic(midi_paths, work_dir, n_shards=48, workers=4, xmx="1g",
+def extract_jsymbolic(midi_paths, work_dir, n_shards=48, workers=4, xmx="1g", retry_xmx="3g",
                       timeout_s=3600, jar=paths.JSYMBOLIC_JAR, config=paths.JSYMBOLIC_CONFIG):
     """Returns (features with a leading `path` column in input order, failed paths)."""
     midi_paths = [Path(p) for p in midi_paths]
@@ -52,6 +52,13 @@ def extract_jsymbolic(midi_paths, work_dir, n_shards=48, workers=4, xmx="1g",
         shutil.rmtree(work_dir)
     jobs = dict(enumerate(midi_paths))
     found = _run_batch(jobs, work_dir / "pass1", n_shards, workers, xmx, timeout_s, jar, config)
+
+    # A crashed or timed-out JVM loses its whole shard; retry those files one per JVM with more memory.
+    missing = {i: p for i, p in jobs.items() if i not in set(found["index"])}
+    if missing:
+        retry = _run_batch(missing, work_dir / "retry", len(missing), min(workers, 2),
+                           retry_xmx, timeout_s, jar, config)
+        found = pd.concat([found, retry], ignore_index=True)
     found = found.drop_duplicates("index").sort_values("index").reset_index(drop=True)
     failed = [str(p) for i, p in jobs.items() if i not in set(found["index"])]
     path = pd.Series([str(midi_paths[i]) for i in found["index"]], name="path")
