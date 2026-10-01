@@ -16,24 +16,8 @@ def test_environment_records_commit_and_versions():
     assert env["python"].startswith("3.13")
 
 
-def synthetic_data():
-    from composer_clf.tabular import TabularData
-
-    rng = np.random.default_rng(0)
-    rows = []
-    for c, name in enumerate(["aa", "bb", "cc"]):
-        for g in range(10):
-            for k in range(3):
-                rows.append({"path": f"{name}-{g}-{k}.mid", "composer": name, "piece_id": f"{name}:{g}",
-                             **{f"F_{j}": rng.normal() + 3 * c * (j == 0) for j in range(6)}})
-    frame = pd.DataFrame(rows)
-    cols = [f"F_{j}" for j in range(6)]
-    return TabularData(X=frame[cols].to_numpy(float), y=frame.composer.to_numpy(),
-                       groups=frame.piece_id.to_numpy(), frame=frame, feature_columns=cols)
-
-
-def test_tune_and_test_picks_best_dev_config():
-    data = synthetic_data()
+def test_tune_and_test_picks_best_dev_config(synthetic_tabular):
+    data = synthetic_tabular
     split = run_tabular.make_split("grouped", data, seed=0)
     best_params, metrics, search, preds = run_tabular.tune_and_test("knn", data, split, ["aa", "bb", "cc"], seed=0)
     assert len(search) == 8
@@ -46,8 +30,8 @@ def test_tune_and_test_picks_best_dev_config():
     assert lo <= metrics["test"]["accuracy"] <= hi
 
 
-def test_make_split_kinds():
-    data = synthetic_data()
+def test_make_split_kinds(synthetic_tabular):
+    data = synthetic_tabular
     assert set(run_tabular.make_split("random", data, 1)) == {"train", "dev", "test"}
     data.frame["split"] = "train"
     assert (run_tabular.make_split("official", data, 1) == "train").all()
@@ -73,8 +57,8 @@ def test_save_run_and_summarize(tmp_path):
     assert len(pd.read_csv(tmp_path / "runs.csv")) == 4
 
 
-def test_main_writes_reproducible_runs(tmp_path):
-    data = synthetic_data()
+def test_main_writes_reproducible_runs(tmp_path, synthetic_tabular):
+    data = synthetic_tabular
     data.frame[["path", "composer", "piece_id"]].to_csv(tmp_path / "cat.csv", index=False)
     data.frame[["path", *data.feature_columns]].to_csv(tmp_path / "feat.csv", index=False)
     out = tmp_path / "results"
