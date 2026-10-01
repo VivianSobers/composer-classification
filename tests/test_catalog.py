@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from composer_clf.data.catalog import dedup_key, deduplicate, normalize_composer, piece_id
+from composer_clf.data.catalog import dedup_key, deduplicate, normalize_composer, piece_id, select_composers
 
 
 def test_aliases():
@@ -64,3 +64,14 @@ def test_deduplicate_drops_files_claimed_by_two_composers():
         _row("bach-z.mid", "bach", "other"),
     ])
     assert list(deduplicate(df).filename) == ["bach-z.mid"]
+
+
+def test_select_composers_needs_files_and_pieces():
+    rows = [_row(f"aa-piece{i}.mid", "aa", f"a{i}") for i in range(6)]            # 6 files, 6 pieces
+    rows += [_row(f"bb-op1_n{i}.mid", "bb", f"b{i}") for i in range(6)]            # 6 files, 1 piece
+    rows += [_row(f"cc-piece{i}.mid", "cc", f"c{i}") for i in range(3)]            # 3 files
+    rows += [_row(f"unknown_artist-p{i}.mid", "unknown_artist", f"u{i}") for i in range(9)]
+    kept, summary = select_composers(pd.DataFrame(rows), min_files=5, min_pieces=5)
+    assert set(kept.composer) == {"aa"}
+    assert summary.loc["bb", "pieces"] == 1 and not summary.loc["bb", "kept"]
+    assert "unknown_artist" not in summary.index

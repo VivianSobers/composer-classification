@@ -5,6 +5,7 @@ from pathlib import Path
 import pandas as pd
 
 COMPOSER_ALIASES = {"haendel": "handel", "mendelsonn": "mendelssohn"}
+EXCLUDED_COMPOSERS = {"unknown_artist"}
 
 _CATALOG_RE = re.compile(r"(?:^|_)(bwv|kv|k|hwv|rv|d|woo)(\d+)(?=[a-z_]|$)")
 _OPUS_RE = re.compile(r"(?:^|_)op(\d+)")
@@ -65,3 +66,13 @@ def deduplicate(df: pd.DataFrame) -> pd.DataFrame:
     df = df[~df.md5.isin(ambiguous)]
     df = df.drop_duplicates("md5", keep="first")
     return df.drop_duplicates("dedup_key", keep="first").reset_index(drop=True)
+
+
+def select_composers(df: pd.DataFrame, min_files: int = 50, min_pieces: int = 5):
+    """Keep composers with enough files, and enough distinct pieces for a grouped split."""
+    df = df[~df.composer.isin(EXCLUDED_COMPOSERS)]
+    summary = df.groupby("composer").agg(files=("path", "size"), pieces=("piece_id", "nunique"))
+    summary["kept"] = (summary.files >= min_files) & (summary.pieces >= min_pieces)
+    kept = summary.index[summary.kept]
+    return (df[df.composer.isin(kept)].reset_index(drop=True),
+            summary.sort_values("files", ascending=False))
