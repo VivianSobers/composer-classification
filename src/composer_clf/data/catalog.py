@@ -2,6 +2,8 @@
 import re
 from pathlib import Path
 
+import pandas as pd
+
 COMPOSER_ALIASES = {"haendel": "handel", "mendelsonn": "mendelssohn"}
 
 _CATALOG_RE = re.compile(r"(?:^|_)(bwv|kv|k|hwv|rv|d|woo)(\d+)(?=[a-z_]|$)")
@@ -48,3 +50,18 @@ def piece_id(filename: str) -> str:
             return f"{composer}:op{match.group(1)}"
     name = _MOVEMENT_RE.sub("", segments[-1]) if segments else ""
     return f"{composer}:{name or 'unnamed'}"
+
+
+def dedup_key(filename: str) -> str:
+    """Composer plus the normalized last name segment; renamed copies collide."""
+    composer, segments = split_name(filename)
+    return f"{composer}:{segments[-1] if segments else ''}"
+
+
+def deduplicate(df: pd.DataFrame) -> pd.DataFrame:
+    """Drop byte-identical files claimed by several composers, then repeat copies."""
+    composers_per_md5 = df.groupby("md5").composer.nunique()
+    ambiguous = composers_per_md5.index[composers_per_md5 > 1]
+    df = df[~df.md5.isin(ambiguous)]
+    df = df.drop_duplicates("md5", keep="first")
+    return df.drop_duplicates("dedup_key", keep="first").reset_index(drop=True)

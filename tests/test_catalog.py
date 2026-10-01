@@ -1,6 +1,7 @@
+import pandas as pd
 import pytest
 
-from composer_clf.data.catalog import normalize_composer, piece_id
+from composer_clf.data.catalog import dedup_key, deduplicate, normalize_composer, piece_id
 
 
 def test_aliases():
@@ -33,3 +34,33 @@ def test_piece_id(filename, expected):
 
 def test_movements_of_one_work_share_piece_id():
     assert piece_id("haydn-symphony_n55_1mov.mid") == piece_id("haydn-symphony_n55_4mov_der_schulmeister.mid")
+
+
+def test_dedup_key_matches_renamed_copies():
+    assert dedup_key("scarlatti-sonatas-k171.mid") == dedup_key("scarlatti-k171.mid")
+    assert dedup_key("clementi-sonatina_op36_n3_1mov.mid") != dedup_key("clementi-sonatina_op36_n3_2mov.mid")
+
+
+def _row(name, composer, md5):
+    return {"path": f"data/raw/{name}", "filename": name, "composer": composer,
+            "piece_id": piece_id(name), "dedup_key": dedup_key(name), "md5": md5}
+
+
+def test_deduplicate_drops_md5_and_name_duplicates():
+    df = pd.DataFrame([
+        _row("scarlatti-sonatas-k171.mid", "scarlatti", "a"),
+        _row("scarlatti-k171.mid", "scarlatti", "b"),          # same dedup key
+        _row("scarlatti-sonatas-k172.mid", "scarlatti", "c"),
+        _row("scarlatti-sonatas-k173.mid", "scarlatti", "c"),  # same bytes, same composer
+    ])
+    out = deduplicate(df)
+    assert sorted(out.filename) == ["scarlatti-sonatas-k171.mid", "scarlatti-sonatas-k172.mid"]
+
+
+def test_deduplicate_drops_files_claimed_by_two_composers():
+    df = pd.DataFrame([
+        _row("bach-x.mid", "bach", "same"),
+        _row("handel-y.mid", "handel", "same"),
+        _row("bach-z.mid", "bach", "other"),
+    ])
+    assert list(deduplicate(df).filename) == ["bach-z.mid"]
