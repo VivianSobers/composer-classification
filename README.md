@@ -25,6 +25,25 @@ Only composers with at least 50 pieces are kept.
 
 ## Setup
 
-Requires Python 3.13 and a Java runtime for jSymbolic (tested with OpenJDK 25).
+You need Python 3.13 and a Java runtime for jSymbolic. We tested with OpenJDK 25 on our laptop and OpenJDK 11 on the GPU server.
 
-Setup and run instructions will be added as the pipeline is built.
+```bash
+python3.13 -m venv .venv
+.venv/bin/pip install -e ".[dev,app]"      # add ,cnn for the piano-roll CNN
+```
+
+The CPU build of PyTorch is enough for the tests. For training the CNN on a GPU, install the default CUDA build instead (`pip install -e ".[cnn]"`).
+
+Download the two datasets and jSymbolic (about 200 MB in total). The Hugging Face files come down four at a time because the server rate-limits faster downloads, so this step takes around 15 minutes:
+
+```bash
+.venv/bin/python -m composer_clf.data.download all
+```
+
+Then build the catalogs. This removes duplicate files, gives every file a piece ID (all movements and copies of one work share it) and keeps composers with at least 50 files and 5 distinct pieces:
+
+```bash
+.venv/bin/python -m composer_clf.data.catalog
+```
+
+Run the tests with `.venv/bin/pytest`. The tests that start jSymbolic are marked slow and skipped by default; run them with `.venv/bin/pytest -m slow`.
