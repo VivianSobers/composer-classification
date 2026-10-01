@@ -45,3 +45,28 @@ def test_training_learns_toy_task():
     assert history[best_epoch - 1]["dev_macro_f1"] == max(h["dev_macro_f1"] for h in history)
     test = split == "test"
     assert (predict(model, X[test], "cpu") == y[test]).mean() >= 0.75
+
+
+def _toy_catalog(tmp_path, midi_factory):
+    import pandas as pd
+
+    rows = []
+    for i, (composer, split) in enumerate([("B", "train"), ("A", "train"), ("A", "dev"),
+                                           ("B", "dev"), ("A", "test"), ("B", "test")] * 2):
+        pitch = 40 if composer == "A" else 80
+        f = midi_factory(f"{i}.mid", [(pitch, 0.0, 30.0, 90)])
+        rows.append({"path": str(f), "composer": composer, "piece_id": f"{composer}:{i}", "split": split})
+    pd.DataFrame(rows).to_csv(tmp_path / "cat.csv", index=False)
+    return tmp_path / "cat.csv"
+
+
+def test_load_rolls_builds_and_reuses_cache(tmp_path, midi_factory):
+    from composer_clf.cnn.run import load_rolls
+
+    cat = _toy_catalog(tmp_path, midi_factory)
+    X, y, split, paths_, labels = load_rolls(tmp_path / "rolls.npz", cat)
+    assert X.shape == (12, 64, 1536) and labels == ["A", "B"]
+    assert list(y[:2]) == [1, 0] and split[2] == "dev"
+    cat.write_text("broken")                       # second call must not read the catalog again
+    X2, *_ = load_rolls(tmp_path / "rolls.npz", cat)
+    assert (X2 == X).all()
