@@ -103,3 +103,11 @@ def test_plot_maestro_comparison(tmp_path):
     _fake_exp(tmp_path, "e5_cnn_noaug", ["cnn"], acc=0.5)
     _fake_exp(tmp_path, "e5_cnn_aug10", ["cnn"], acc=0.55)
     assert _is_png(plot_maestro_comparison(tmp_path, tmp_path / "fig.png"))
+
+
+def test_plot_cnn_curves(tmp_path):
+    from composer_clf.report import plot_cnn_curves
+
+    _fake_exp(tmp_path, "e5_cnn_noaug", ["cnn"])
+    _fake_exp(tmp_path, "e5_cnn_aug10", ["cnn"])
+    assert _is_png(plot_cnn_curves(tmp_path, tmp_path / "fig.png"))

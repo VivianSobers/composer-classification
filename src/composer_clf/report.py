@@ -222,5 +222,25 @@ def plot_maestro_comparison(results_dir: Path, out: Path) -> Path:
                      "Test accuracy, mean ± std over seeds", out)
 
 
+def plot_cnn_curves(results_dir: Path, out: Path) -> Path:
+    """Dev accuracy per epoch, averaged over seeds, for each CNN setting."""
+    fig, ax = _figure(3.2)
+    ax.grid(axis="y", color=GRID, linewidth=0.8)
+    ax.grid(axis="x", visible=False)
+    for k, (exp, label) in enumerate(CNN_RUNS.items()):
+        runs = sorted((Path(results_dir) / exp / "cnn").glob("seed*/dev_search.csv"))
+        if not runs:
+            continue
+        curve = pd.concat([pd.read_csv(f) for f in runs]).groupby("epoch").dev_accuracy.mean()
+        ax.plot(curve.index, curve.to_numpy(), color=SERIES[k], linewidth=2, solid_capstyle="round",
+                label=f"{label} ({len(runs)} seeds)")
+    ax.set_ylim(0, 1)
+    ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(1.0))
+    ax.xaxis.set_major_locator(matplotlib.ticker.MaxNLocator(integer=True))
+    ax.legend(frameon=False, loc="lower left", bbox_to_anchor=(0, 1.0), ncol=2, fontsize=9,
+              labelcolor=INK_SECONDARY, borderaxespad=0.2)
+    return _save(fig, ax, "CNN dev accuracy during training", "Epoch", out)
+
+
 if __name__ == "__main__":
     print(write_tables())
