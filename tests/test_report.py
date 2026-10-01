@@ -61,3 +61,10 @@ def test_plot_leakage(tmp_path):
     _fake_exp(tmp_path, "e1_composers", ["lightgbm", "svm", "knn"], acc=0.6)
     _fake_exp(tmp_path, "e2_random_split", ["lightgbm", "svm"], acc=0.8)
     assert _is_png(plot_leakage(tmp_path, tmp_path / "fig.png"))
+
+
+def test_plot_confusion(tmp_path):
+    from composer_clf.report import plot_confusion
+
+    _fake_exp(tmp_path, "e1_composers", ["lightgbm"])
+    assert _is_png(plot_confusion(tmp_path, tmp_path / "fig.png"))

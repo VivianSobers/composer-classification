@@ -14,6 +14,9 @@ from composer_clf import paths  # noqa: E402
 SERIES = ["#2a78d6", "#eb6834"]
 SURFACE, INK, INK_SECONDARY, INK_MUTED = "#fcfcfb", "#0b0b0b", "#52514e", "#898781"
 GRID, BASELINE = "#e1e0d9", "#c3c2b7"
+# Sequential blue ramp, steps 100 to 700.
+BLUES = ["#cde2fb", "#b7d3f6", "#9ec5f4", "#86b6ef", "#6da7ec", "#5598e7", "#3987e5", "#2a78d6",
+         "#256abf", "#1c5cab", "#184f95", "#104281", "#0d366b"]
 MODEL_NAMES = {"lightgbm": "LightGBM", "softmax": "Softmax", "svm": "SVM (RBF)", "lda": "LDA",
                "knn": "k-NN", "mlp": "MLP", "cnn": "CNN"}
 
@@ -117,6 +120,47 @@ def plot_leakage(results_dir: Path, out: Path, grouped: str = "e1_composers", ra
                      "std": r.loc[model, "test_accuracy_std"]})
     return _dot_plot(pd.DataFrame(rows), ["Grouped by piece", "Random by file"],
                      "Test accuracy under two ways of splitting the data", "Test accuracy, mean ± std over seeds", out)
+
+
+def plot_confusion(results_dir: Path, out: Path, exp: str = "e1_composers", model: str = "lightgbm",
+                   seed: int = 0) -> Path:
+    """Row-normalized test confusion matrix; only the diagonal (per-composer recall) is labeled."""
+    import numpy as np
+    from matplotlib.colors import LinearSegmentedColormap
+
+    m = json.loads((Path(results_dir) / exp / model / f"seed{seed}" / "metrics.json").read_text())["test"]
+    counts = np.array(m["confusion"], dtype=float)
+    share = counts / np.maximum(counts.sum(axis=1, keepdims=True), 1)
+    labels = [name.capitalize() for name in m["labels"]]
+    n = len(labels)
+    fig, ax = plt.subplots(figsize=(0.42 * n + 2.6, 0.42 * n + 1.6), dpi=200)
+    fig.patch.set_facecolor(SURFACE)
+    ax.set_facecolor(SURFACE)
+    cmap = LinearSegmentedColormap.from_list("blues", BLUES)
+    mesh = ax.pcolormesh(share, cmap=cmap, vmin=0, vmax=1, edgecolors=SURFACE, linewidth=2)
+    for i in range(n):
+        ax.text(i + 0.5, i + 0.5, f"{share[i, i]:.0%}", ha="center", va="center", fontsize=7,
+                color="#ffffff" if share[i, i] > 0.45 else INK)
+    ax.set_xticks([i + 0.5 for i in range(n)], labels, rotation=60, ha="right")
+    ax.set_yticks([i + 0.5 for i in range(n)], labels)
+    ax.invert_yaxis()
+    ax.tick_params(colors=INK_SECONDARY, length=0, labelsize=8)
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+    ax.set_ylabel("True composer", color=INK_SECONDARY, fontsize=9)
+    bar = fig.colorbar(mesh, ax=ax, fraction=0.04, pad=0.02, format=matplotlib.ticker.PercentFormatter(1.0))
+    bar.outline.set_visible(False)
+    bar.ax.tick_params(colors=INK_MUTED, length=0, labelsize=8)
+    bar.set_label("Share of the true composer's test pieces", color=INK_SECONDARY, fontsize=8)
+    ax.set_title(f"{MODEL_NAMES.get(model, model)} test predictions (seed {seed})", loc="left", color=INK,
+                 fontsize=11, pad=12)
+    ax.set_xlabel("Predicted composer", color=INK_SECONDARY, fontsize=9)
+    out = Path(out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    fig.tight_layout()
+    fig.savefig(out, facecolor=SURFACE)
+    plt.close(fig)
+    return out
 
 
 if __name__ == "__main__":
