@@ -1,0 +1,106 @@
+{
+  "best_config": 6,
+  "train_accuracy": 1.0,
+  "dev": {
+    "accuracy": 0.8582375478927203,
+    "balanced_accuracy": 0.6855121675155632,
+    "macro_precision": 0.7991603339900554,
+    "macro_recall": 0.6855121675155632,
+    "macro_f1": 0.7261783803137186,
+    "per_class": {
+      "baroque": {
+        "precision": 0.8827751196172249,
+        "recall": 0.9710526315789474,
+        "f1": 0.924812030075188,
+        "support": 380
+      },
+      "classical": {
+        "precision": 0.7647058823529411,
+        "recall": 0.65,
+        "f1": 0.7027027027027027,
+        "support": 80
+      },
+      "romantic": {
+        "precision": 0.75,
+        "recall": 0.43548387096774194,
+        "f1": 0.5510204081632653,
+        "support": 62
+      }
+    },
+    "confusion": [
+      [
+        369,
+        5,
+        6
+      ],
+      [
+        25,
+        52,
+        3
+      ],
+      [
+        24,
+        11,
+        27
+      ]
+    ],
+    "labels": [
+      "baroque",
+      "classical",
+      "romantic"
+    ]
+  },
+  "test": {
+    "accuracy": 0.869980879541109,
+    "balanced_accuracy": 0.7372071656640605,
+    "macro_precision": 0.8166641528406234,
+    "macro_recall": 0.7372071656640605,
+    "macro_f1": 0.7710458740202847,
+    "per_class": {
+      "baroque": {
+        "precision": 0.8946078431372549,
+        "recall": 0.9605263157894737,
+        "f1": 0.9263959390862944,
+        "support": 380
+      },
+      "classical": {
+        "precision": 0.8153846153846154,
+        "recall": 0.654320987654321,
+        "f1": 0.726027397260274,
+        "support": 81
+      },
+      "romantic": {
+        "precision": 0.74,
+        "recall": 0.5967741935483871,
+        "f1": 0.6607142857142857,
+        "support": 62
+      }
+    },
+    "confusion": [
+      [
+        365,
+        6,
+        9
+      ],
+      [
+        24,
+        53,
+        4
+      ],
+      [
+        19,
+        6,
+        37
+      ]
+    ],
+    "labels": [
+      "baroque",
+      "classical",
+      "romantic"
+    ]
+  },
+  "test_accuracy_ci95": [
+    0.8413001912045889,
+    0.8986615678776291
+  ]
+}
