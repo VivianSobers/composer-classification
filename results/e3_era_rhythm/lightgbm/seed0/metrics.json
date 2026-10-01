@@ -1,0 +1,106 @@
+{
+  "best_config": 5,
+  "train_accuracy": 1.0,
+  "dev": {
+    "accuracy": 0.8735632183908046,
+    "balanced_accuracy": 0.7174448217317487,
+    "macro_precision": 0.813875703701457,
+    "macro_recall": 0.7174448217317487,
+    "macro_f1": 0.7567002589912558,
+    "per_class": {
+      "baroque": {
+        "precision": 0.8985507246376812,
+        "recall": 0.9789473684210527,
+        "f1": 0.9370277078085643,
+        "support": 380
+      },
+      "classical": {
+        "precision": 0.819672131147541,
+        "recall": 0.625,
+        "f1": 0.7092198581560284,
+        "support": 80
+      },
+      "romantic": {
+        "precision": 0.723404255319149,
+        "recall": 0.5483870967741935,
+        "f1": 0.6238532110091743,
+        "support": 62
+      }
+    },
+    "confusion": [
+      [
+        372,
+        2,
+        6
+      ],
+      [
+        23,
+        50,
+        7
+      ],
+      [
+        19,
+        9,
+        34
+      ]
+    ],
+    "labels": [
+      "baroque",
+      "classical",
+      "romantic"
+    ]
+  },
+  "test": {
+    "accuracy": 0.847036328871893,
+    "balanced_accuracy": 0.722897496628868,
+    "macro_precision": 0.7495391146149181,
+    "macro_recall": 0.722897496628868,
+    "macro_f1": 0.7337041618856378,
+    "per_class": {
+      "baroque": {
+        "precision": 0.9097938144329897,
+        "recall": 0.9289473684210526,
+        "f1": 0.9192708333333334,
+        "support": 380
+      },
+      "classical": {
+        "precision": 0.6588235294117647,
+        "recall": 0.691358024691358,
+        "f1": 0.6746987951807228,
+        "support": 81
+      },
+      "romantic": {
+        "precision": 0.68,
+        "recall": 0.5483870967741935,
+        "f1": 0.6071428571428571,
+        "support": 62
+      }
+    },
+    "confusion": [
+      [
+        353,
+        20,
+        7
+      ],
+      [
+        16,
+        56,
+        9
+      ],
+      [
+        19,
+        9,
+        34
+      ]
+    ],
+    "labels": [
+      "baroque",
+      "classical",
+      "romantic"
+    ]
+  },
+  "test_accuracy_ci95": [
+    0.8145315487571702,
+    0.8776290630975143
+  ]
+}
