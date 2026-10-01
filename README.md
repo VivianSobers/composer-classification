@@ -47,3 +47,48 @@ Then build the catalogs. This removes duplicate files, gives every file a piece 
 ```
 
 Run the tests with `.venv/bin/pytest`. The tests that start jSymbolic are marked slow and skipped by default; run them with `.venv/bin/pytest -m slow`.
+
+## Running the experiments
+
+Extract jSymbolic features for both datasets. Each run splits the files into shards and runs several Java processes at once. On a 16-core laptop with 14 GB of RAM, four workers was the most we could run; the Hugging Face set then takes roughly two hours. Files that jSymbolic can't read are listed in `data/processed/<dataset>_jsymbolic_failed.txt`.
+
+```bash
+.venv/bin/python -m composer_clf.features.extract --dataset hf
+.venv/bin/python -m composer_clf.features.extract --dataset maestro --shards 48 --workers 8
+```
+
+Every experiment writes one folder per model and seed under `results/<experiment>/`, holding the full config (including the git commit and library versions), the metrics, the dev-set tuning table and the test predictions. Each model gets the same eight hyperparameter settings, the best one on the dev set is kept, and the test set is scored once. Seeds 0 to 4 are used unless you pass `--seeds`.
+
+```bash
+# E1: six classifiers, splits grouped by piece
+.venv/bin/python -m composer_clf.run_tabular --exp e1_composers --split grouped
+
+# E2: the same models with a random file-level split, to measure leakage
+.venv/bin/python -m composer_clf.run_tabular --exp e2_random_split --split random --models lightgbm softmax svm
+
+# E3: LightGBM on one feature group at a time, for composers and for eras
+for g in rhythm melodic vertical texture instrumentation no_instrumentation; do
+  .venv/bin/python -m composer_clf.run_tabular --exp e3_composer_$g --features $g --models lightgbm
+done
+for g in all rhythm melodic vertical texture; do
+  .venv/bin/python -m composer_clf.run_tabular --exp e3_era_$g --task era --features $g --models lightgbm
+done
+
+# E4: the six classifiers on MAESTRO's official split
+.venv/bin/python -m composer_clf.run_tabular --exp e4_maestro_tabular --dataset maestro --split official
+
+# E5: the piano-roll CNN on MAESTRO (run on a GPU)
+.venv/bin/python -m composer_clf.cnn.run --exp e5_cnn_noaug --repeats 1
+.venv/bin/python -m composer_clf.cnn.run --exp e5_cnn_aug10 --augment --repeats 10
+```
+
+`python -m composer_clf.report` collects every `summary.csv` into `results/tables.md`.
+
+## Demo
+
+The demo is a Streamlit app. You upload a MIDI file, and it shows the predicted composer, the probability of each composer, the features that pushed the prediction most and the piano roll. It uses the LightGBM model selected in E1 for seed 0:
+
+```bash
+.venv/bin/python -m composer_clf.train_final
+.venv/bin/streamlit run app/streamlit_app.py
+```
