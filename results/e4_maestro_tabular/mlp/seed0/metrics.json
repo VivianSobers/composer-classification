@@ -1,0 +1,214 @@
+{
+  "best_config": 6,
+  "train_accuracy": 1.0,
+  "dev": {
+    "accuracy": 0.7525773195876289,
+    "balanced_accuracy": 0.7956989247311829,
+    "macro_precision": 0.7525521319638967,
+    "macro_recall": 0.7956989247311829,
+    "macro_f1": 0.7516038521414866,
+    "per_class": {
+      "Franz Liszt": {
+        "precision": 0.8235294117647058,
+        "recall": 0.7777777777777778,
+        "f1": 0.8,
+        "support": 18
+      },
+      "Franz Schubert": {
+        "precision": 0.5714285714285714,
+        "recall": 1.0,
+        "f1": 0.7272727272727273,
+        "support": 4
+      },
+      "Fr\u00e9d\u00e9ric Chopin": {
+        "precision": 0.6857142857142857,
+        "recall": 0.7741935483870968,
+        "f1": 0.7272727272727273,
+        "support": 31
+      },
+      "Johann Sebastian Bach": {
+        "precision": 0.8235294117647058,
+        "recall": 1.0,
+        "f1": 0.9032258064516129,
+        "support": 14
+      },
+      "Ludwig van Beethoven": {
+        "precision": 0.8333333333333334,
+        "recall": 0.8333333333333334,
+        "f1": 0.8333333333333334,
+        "support": 12
+      },
+      "Sergei Rachmaninoff": {
+        "precision": 0.7777777777777778,
+        "recall": 0.3888888888888889,
+        "f1": 0.5185185185185185,
+        "support": 18
+      }
+    },
+    "confusion": [
+      [
+        14,
+        0,
+        2,
+        0,
+        0,
+        2
+      ],
+      [
+        0,
+        4,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        1,
+        24,
+        3,
+        2,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        14,
+        0,
+        0
+      ],
+      [
+        0,
+        2,
+        0,
+        0,
+        10,
+        0
+      ],
+      [
+        2,
+        0,
+        9,
+        0,
+        0,
+        7
+      ]
+    ],
+    "labels": [
+      "Franz Liszt",
+      "Franz Schubert",
+      "Fr\u00e9d\u00e9ric Chopin",
+      "Johann Sebastian Bach",
+      "Ludwig van Beethoven",
+      "Sergei Rachmaninoff"
+    ]
+  },
+  "test": {
+    "accuracy": 0.6694214876033058,
+    "balanced_accuracy": 0.6423067632850242,
+    "macro_precision": 0.6674930280837428,
+    "macro_recall": 0.6423067632850242,
+    "macro_f1": 0.6264211097544431,
+    "per_class": {
+      "Franz Liszt": {
+        "precision": 0.9473684210526315,
+        "recall": 0.9,
+        "f1": 0.9230769230769231,
+        "support": 20
+      },
+      "Franz Schubert": {
+        "precision": 0.4838709677419355,
+        "recall": 0.6521739130434783,
+        "f1": 0.5555555555555556,
+        "support": 23
+      },
+      "Fr\u00e9d\u00e9ric Chopin": {
+        "precision": 0.6551724137931034,
+        "recall": 0.76,
+        "f1": 0.7037037037037037,
+        "support": 25
+      },
+      "Johann Sebastian Bach": {
+        "precision": 0.8947368421052632,
+        "recall": 1.0,
+        "f1": 0.9444444444444444,
+        "support": 17
+      },
+      "Ludwig van Beethoven": {
+        "precision": 0.5238095238095238,
+        "recall": 0.4583333333333333,
+        "f1": 0.4888888888888889,
+        "support": 24
+      },
+      "Sergei Rachmaninoff": {
+        "precision": 0.5,
+        "recall": 0.08333333333333333,
+        "f1": 0.14285714285714285,
+        "support": 12
+      }
+    },
+    "confusion": [
+      [
+        18,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        15,
+        1,
+        0,
+        5,
+        1
+      ],
+      [
+        0,
+        1,
+        19,
+        0,
+        5,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        17,
+        0,
+        0
+      ],
+      [
+        0,
+        11,
+        1,
+        1,
+        11,
+        0
+      ],
+      [
+        0,
+        3,
+        7,
+        1,
+        0,
+        1
+      ]
+    ],
+    "labels": [
+      "Franz Liszt",
+      "Franz Schubert",
+      "Fr\u00e9d\u00e9ric Chopin",
+      "Johann Sebastian Bach",
+      "Ludwig van Beethoven",
+      "Sergei Rachmaninoff"
+    ]
+  },
+  "test_accuracy_ci95": [
+    0.5865702479338843,
+    0.7520661157024794
+  ]
+}
