@@ -24,3 +24,18 @@ def test_balanced_accuracy_and_confusion():
 def test_balanced_accuracy_ignores_absent_classes():
     m = compute_metrics(["a", "a", "b"], ["a", "b", "b"], ["a", "b", "z"])
     assert m["balanced_accuracy"] == pytest.approx((0.5 + 1.0) / 2)
+
+
+def test_bootstrap_perfect_and_deterministic():
+    import numpy as np
+
+    from composer_clf.evaluate import bootstrap_ci
+
+    y = list("aabbccaabb")
+    assert bootstrap_ci(y, y) == (1.0, 1.0)
+    rng = np.random.default_rng(0)
+    pred = [p if rng.random() < 0.7 else "c" for p in y]
+    assert bootstrap_ci(y, pred, seed=5) == bootstrap_ci(y, pred, seed=5)
+    lo, hi = bootstrap_ci(y, pred, seed=5)
+    point = compute_metrics(y, pred, sorted(set(y)))["accuracy"]
+    assert lo <= point <= hi

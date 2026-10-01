@@ -21,3 +21,17 @@ def compute_metrics(y_true, y_pred, labels) -> dict:
         "confusion": confusion_matrix(y_true, y_pred, labels=labels).tolist(),
         "labels": labels,
     }
+
+
+def bootstrap_ci(y_true, y_pred, metric="accuracy", n_boot=1000, seed=0, alpha=0.05, labels=None):
+    """Percentile bootstrap interval for one metric over resampled test items."""
+    y_true, y_pred = np.asarray(y_true), np.asarray(y_pred)
+    rng = np.random.default_rng(seed)
+    idx = rng.integers(0, len(y_true), size=(n_boot, len(y_true)))
+    if metric == "accuracy":
+        stats = (y_true[idx] == y_pred[idx]).mean(axis=1)
+    else:
+        labels = labels if labels is not None else sorted(set(y_true) | set(y_pred))
+        stats = [compute_metrics(y_true[i], y_pred[i], labels)[metric] for i in idx]
+    lo, hi = np.quantile(stats, [alpha / 2, 1 - alpha / 2])
+    return float(lo), float(hi)
