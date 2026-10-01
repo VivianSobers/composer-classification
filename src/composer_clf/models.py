@@ -5,6 +5,7 @@ from lightgbm import LGBMClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
 
 
 def _grid(**axes) -> list[dict]:
@@ -14,6 +15,7 @@ def _grid(**axes) -> list[dict]:
 GRIDS = {
     "lightgbm": _grid(n_estimators=[300, 700], reg_lambda=[1.0, 10.0], learning_rate=[0.05, 0.1]),
     "softmax": _grid(C=[1e-3, 1e-2, 1e-1, 1.0, 10.0, 100.0, 1e3, 1e4]),
+    "svm": _grid(C=[0.5, 1.0, 2.0, 5.5, 10.0, 20.0, 50.0, 100.0]),
 }
 
 
@@ -23,6 +25,8 @@ def _estimator(name: str, params: dict, seed: int):
                               random_state=seed, n_jobs=4, verbose=-1, **params)
     if name == "softmax":
         return LogisticRegression(max_iter=5000, random_state=seed, **params)
+    if name == "svm":
+        return SVC(kernel="rbf", gamma="auto", random_state=seed, **params)
     raise ValueError(f"unknown model: {name}")
 
 
