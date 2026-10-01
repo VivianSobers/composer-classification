@@ -23,3 +23,6 @@ docs/superpowers/
 
 # Office lock files
 .~lock.*
+
+# Local run logs
+logs/
