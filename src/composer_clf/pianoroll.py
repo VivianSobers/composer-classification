@@ -14,3 +14,13 @@ def midi_to_roll(path) -> np.ndarray:
     out = np.zeros((HIGH - LOW, N_FRAMES), np.uint8)
     out[: roll.shape[0], : roll.shape[1]] = roll
     return out
+
+
+def shift(roll: np.ndarray, dx: int, dy: int) -> np.ndarray:
+    """Translate by dx frames and dy pitches, filling the uncovered edge with zeros."""
+    out = np.zeros_like(roll)
+    h, w = roll.shape
+    src_r, dst_r = (slice(0, h - dy), slice(dy, h)) if dy >= 0 else (slice(-dy, h), slice(0, h + dy))
+    src_c, dst_c = (slice(0, w - dx), slice(dx, w)) if dx >= 0 else (slice(-dx, w), slice(0, w + dx))
+    out[dst_r, dst_c] = roll[src_r, src_c]
+    return out

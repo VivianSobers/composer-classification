@@ -22,3 +22,15 @@ def test_long_piece_cropped(midi_factory):
 
 def test_empty_midi(midi_factory):
     assert midi_to_roll(midi_factory("e.mid", [])).sum() == 0
+
+
+def test_shift_positive_and_negative():
+    from composer_clf.pianoroll import shift
+
+    roll = (np.arange(64 * 1536).reshape(64, 1536) % 200).astype(np.uint8)
+    out = shift(roll, dx=5, dy=2)
+    assert (out[2:, 5:] == roll[:-2, :-5]).all()
+    assert out[:2].sum() == 0 and out[:, :5].sum() == 0
+    back = shift(roll, dx=-5, dy=-2)
+    assert (back[:-2, :-5] == roll[2:, 5:]).all()
+    assert back[-2:].sum() == 0 and back[:, -5:].sum() == 0
