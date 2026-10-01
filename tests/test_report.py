@@ -79,3 +79,18 @@ def test_plot_ablation(tmp_path):
     for g in ("all", "rhythm"):
         _fake_exp(tmp_path, f"e3_era_{g}", ["lightgbm"], acc=0.8)
     assert _is_png(plot_ablation(tmp_path, tmp_path / "fig.png"))
+
+
+def test_plot_importance(tmp_path):
+    import joblib
+    import numpy as np
+
+    from composer_clf.models import build
+    from composer_clf.report import plot_importance
+
+    rng = np.random.default_rng(0)
+    y = np.repeat(["a", "b", "c"], 20)
+    X = rng.normal(size=(60, 25)) + (y == "b")[:, None]
+    pipe = build("lightgbm", {"n_estimators": 20, "reg_lambda": 1.0, "learning_rate": 0.1}, seed=0).fit(X, y)
+    joblib.dump({"pipeline": pipe, "feature_columns": [f"Feature_{i}" for i in range(25)]}, tmp_path / "m.joblib")
+    assert _is_png(plot_importance(tmp_path / "m.joblib", tmp_path / "fig.png", top=20))

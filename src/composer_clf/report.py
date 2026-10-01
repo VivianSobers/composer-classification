@@ -185,5 +185,21 @@ def plot_ablation(results_dir: Path, out: Path) -> Path:
                      "Test accuracy, mean ± std over seeds", out)
 
 
+def plot_importance(bundle_path: Path, out: Path, top: int = 20) -> Path:
+    """Top LightGBM features by total split gain, from the saved demo model."""
+    import joblib
+
+    bundle = joblib.load(bundle_path)
+    booster = bundle["pipeline"].named_steps["clf"].booster_
+    gain = pd.Series(booster.feature_importance(importance_type="gain"), index=bundle["feature_columns"])
+    gain = gain.sort_values(ascending=False).head(top)
+    fig, ax = _figure(0.28 * len(gain) + 1.2)
+    ax.barh(range(len(gain)), gain.to_numpy(), height=0.55, color=SERIES[0])
+    ax.set_yticks(range(len(gain)), [name.replace("_", " ") for name in gain.index], fontsize=8)
+    ax.invert_yaxis()
+    ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda v, _: f"{v:,.0f}"))
+    return _save(fig, ax, f"Top {len(gain)} features of the LightGBM model", "Total information gain", out)
+
+
 if __name__ == "__main__":
     print(write_tables())
