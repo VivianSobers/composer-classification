@@ -10,6 +10,15 @@ from composer_clf.features.groups import feature_columns
 # Mostly NaN in jSymbolic output; the original paper dropped it too.
 DROP_FEATURES = ["Note_Density_per_Quarter_Note_Variability"]
 
+# Eras as in the paper. Beethoven, Schubert and Hummel span two eras and Maier predates all
+# three, so they have no era label and are left out of the era task.
+ERA_OF = {
+    **dict.fromkeys(["bach", "handel", "vivaldi", "telemann", "scarlatti"], "baroque"),
+    **dict.fromkeys(["mozart", "haydn", "clementi"], "classical"),
+    **dict.fromkeys(["chopin", "schumann", "brahms", "mendelssohn", "liszt", "debussy",
+                     "dvorak", "burgmuller"], "romantic"),
+}
+
 
 @dataclass
 class TabularData:
@@ -29,6 +38,12 @@ def load_tabular(catalog_csv: Path, features_csv: Path, feature_group: str = "al
     df = catalog.merge(feats[["path", *cols]], on="path", how="inner")
     df[cols] = df[cols].apply(pd.to_numeric, errors="coerce")
     df = df[~df[cols].isna().any(axis=1)]
-    df = df.assign(label=df.composer).reset_index(drop=True)
+    if task == "era":
+        df = df.assign(label=df.composer.map(ERA_OF)).dropna(subset=["label"])
+    elif task == "composer":
+        df = df.assign(label=df.composer)
+    else:
+        raise ValueError(f"unknown task: {task}")
+    df = df.reset_index(drop=True)
     return TabularData(X=df[cols].to_numpy(float), y=df.label.to_numpy(),
                        groups=df.piece_id.to_numpy(), frame=df, feature_columns=cols)

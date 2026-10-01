@@ -40,3 +40,15 @@ def test_drops_listed_feature_and_nan_rows(tmp_path):
     assert list(data.y) == ["bach", "beethoven", "chopin"]       # mozart row has NaN Range
     assert data.X.shape == (3, 3)
     assert not np.isnan(data.X).any()
+
+
+def test_era_task_drops_transitional(tmp_path):
+    data = load_tabular(*write(tmp_path), task="era")
+    assert list(data.y) == ["baroque", "romantic"]
+
+
+def test_unknown_task(tmp_path):
+    import pytest
+
+    with pytest.raises(ValueError):
+        load_tabular(*write(tmp_path), task="decade")
