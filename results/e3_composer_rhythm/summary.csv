@@ -1,0 +1,2 @@
+model,n_seeds,test_accuracy_mean,test_accuracy_std,test_macro_f1_mean,test_macro_f1_std,test_balanced_accuracy_mean,test_balanced_accuracy_std,dev_macro_f1_mean,dev_macro_f1_std,train_accuracy_mean,train_accuracy_std
+lightgbm,5,0.6970099667774086,0.013474617801111779,0.49875392983280376,0.03307908777791861,0.5026887034009302,0.034964427050978845,0.49114193888710567,0.017794775151704488,1.0,0.0
