@@ -1,6 +1,6 @@
 import pandas as pd
 
-from composer_clf.report import collect
+from composer_clf.report import collect, write_tables
 
 
 def _write_summaries(tmp_path):
@@ -17,3 +17,10 @@ def test_collect_orders_experiments(tmp_path):
     table = collect(tmp_path)
     assert list(table.experiment) == ["e1_composers", "e2_random_split"]
     assert list(table.columns[:2]) == ["experiment", "model"]
+
+
+def test_write_tables_formats_mean_and_std(tmp_path):
+    _write_summaries(tmp_path)
+    text = write_tables(tmp_path).read_text()
+    assert text.splitlines()[0].startswith("| experiment | model | seeds |")
+    assert "| e1_composers | lightgbm | 5 | 0.700 ± 0.020 | 0.600 ± 0.030 |" in text
