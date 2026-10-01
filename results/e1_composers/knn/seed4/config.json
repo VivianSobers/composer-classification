@@ -1,0 +1,91 @@
+{
+  "exp": "e1_composers",
+  "dataset": "hf",
+  "extractor": "jsymbolic",
+  "catalog": "/home/ccbd/composer-classification/data/processed/hf_catalog.csv",
+  "features_csv": "/home/ccbd/composer-classification/data/processed/hf_jsymbolic.csv",
+  "split": "grouped",
+  "features": "all",
+  "task": "composer",
+  "models": [
+    "lightgbm",
+    "softmax",
+    "svm",
+    "lda",
+    "knn",
+    "mlp"
+  ],
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "out_root": "/home/ccbd/composer-classification/results",
+  "seed": 4,
+  "model": "knn",
+  "grid": [
+    {
+      "n_neighbors": 1
+    },
+    {
+      "n_neighbors": 3
+    },
+    {
+      "n_neighbors": 5
+    },
+    {
+      "n_neighbors": 7
+    },
+    {
+      "n_neighbors": 11
+    },
+    {
+      "n_neighbors": 15
+    },
+    {
+      "n_neighbors": 21
+    },
+    {
+      "n_neighbors": 31
+    }
+  ],
+  "best_params": {
+    "n_neighbors": 1
+  },
+  "labels": [
+    "bach",
+    "beethoven",
+    "brahms",
+    "chopin",
+    "clementi",
+    "handel",
+    "haydn",
+    "maier",
+    "mendelssohn",
+    "mozart",
+    "scarlatti",
+    "schubert",
+    "schumann",
+    "vivaldi"
+  ],
+  "n_features": 1494,
+  "split_sizes": {
+    "train": 1799,
+    "dev": 588,
+    "test": 602
+  },
+  "environment": {
+    "git_commit": "45be98db85413941907bc6f86654dfd14123e1a1",
+    "git_dirty": false,
+    "python": "3.13.7",
+    "packages": {
+      "numpy": "2.5.3",
+      "pandas": "3.0.6",
+      "scikit-learn": "1.9.1",
+      "lightgbm": "4.7.0",
+      "music21": "10.5.0"
+    }
+  }
+}
