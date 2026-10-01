@@ -28,6 +28,10 @@ def probability_chart(probs: pd.Series, top_k: int = 5) -> alt.Chart:
             .configure_view(stroke=None))
 
 
-def roll_image(roll: np.ndarray) -> np.ndarray:
-    """Grayscale image of a piano roll: high pitches on top, velocity 0-127 stretched to 0-254."""
-    return (np.flipud(roll).astype(np.uint16) * 2).astype(np.uint8)
+def roll_image(roll: np.ndarray, row_scale: int = 1) -> np.ndarray:
+    """Grayscale image of a piano roll: high pitches on top, velocity 0-127 stretched to 0-254.
+
+    row_scale repeats each pitch row, since a 64 x 1536 roll is too flat to read at page width.
+    """
+    img = (np.flipud(roll).astype(np.uint16) * 2).astype(np.uint8)
+    return np.repeat(img, row_scale, axis=0)

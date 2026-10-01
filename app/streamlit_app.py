@@ -45,6 +45,6 @@ if upload:
         st.altair_chart(probability_chart(probs), use_container_width=True, theme=None)
         st.markdown("**Features that pushed the prediction most**")
         st.dataframe(top, hide_index=True)
-        st.image(roll_image(midi_to_roll(midi)), use_container_width=True,
+        st.image(roll_image(midi_to_roll(midi), row_scale=5), use_container_width=True,
                  caption="Piano roll of the first 153.6 s (MIDI pitches 32 to 95, high notes on top), "
                          "the input format of the CNN")

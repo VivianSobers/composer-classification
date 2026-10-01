@@ -26,3 +26,15 @@ def test_roll_image_puts_high_pitches_on_top():
     img = roll_image(roll)
     assert img.shape == (64, 1536) and img.dtype == np.uint8
     assert (img[-1, :10] == 254).all() and img[0].sum() == 0
+
+
+def test_roll_image_can_stretch_pitch_rows():
+    import numpy as np
+
+    from composer_clf.demo_charts import roll_image
+
+    roll = np.zeros((64, 1536), np.uint8)
+    roll[63] = 100                            # highest pitch
+    img = roll_image(roll, row_scale=4)
+    assert img.shape == (256, 1536)
+    assert (img[:4] == 200).all() and img[4:].sum() == 0
