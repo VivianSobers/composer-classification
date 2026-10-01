@@ -50,7 +50,8 @@ def _collect(work_dir: Path) -> pd.DataFrame:
 
 
 def extract_jsymbolic(midi_paths, work_dir, n_shards=48, workers=4, xmx="1g", retry_xmx="3g",
-                      timeout_s=3600, jar=paths.JSYMBOLIC_JAR, config=paths.JSYMBOLIC_CONFIG, resume=False):
+                      timeout_s=3600, jar=paths.JSYMBOLIC_JAR, config=paths.JSYMBOLIC_CONFIG, resume=False,
+                      retry_workers=2):
     """Returns (features with a leading `path` column in input order, failed paths).
 
     With resume=True, rows already extracted into work_dir by an earlier (possibly interrupted)
@@ -68,7 +69,7 @@ def extract_jsymbolic(midi_paths, work_dir, n_shards=48, workers=4, xmx="1g", re
         # A crashed or timed-out JVM loses its whole shard; retry those files one per JVM with more memory.
         missing = {i: p for i, p in jobs.items() if i not in set(new["index"])}
         if missing:
-            retry = _run_batch(missing, run_dir / "retry", len(missing), min(workers, 2),
+            retry = _run_batch(missing, run_dir / "retry", len(missing), retry_workers,
                                retry_xmx, timeout_s, jar, config)
             new = pd.concat([new, retry], ignore_index=True)
         found = pd.concat([found, new], ignore_index=True) if len(found) else new
