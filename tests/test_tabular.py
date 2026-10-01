@@ -32,3 +32,11 @@ def test_joins_catalog_with_features(tmp_path):
 def test_feature_group_selection(tmp_path):
     data = load_tabular(*write(tmp_path), feature_group="instrumentation")
     assert data.feature_columns == ["Violin_Prevalence"]
+
+
+def test_drops_listed_feature_and_nan_rows(tmp_path):
+    data = load_tabular(*write(tmp_path))
+    assert "Note_Density_per_Quarter_Note_Variability" not in data.feature_columns
+    assert list(data.y) == ["bach", "beethoven", "chopin"]       # mozart row has NaN Range
+    assert data.X.shape == (3, 3)
+    assert not np.isnan(data.X).any()
