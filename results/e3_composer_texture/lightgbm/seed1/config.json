@@ -1,0 +1,104 @@
+{
+  "exp": "e3_composer_texture",
+  "dataset": "hf",
+  "extractor": "jsymbolic",
+  "catalog": "/home/viviansobers/Documents/SEM 5/ML/ML Project/data/processed/hf_catalog.csv",
+  "features_csv": "/home/viviansobers/Documents/SEM 5/ML/ML Project/data/processed/hf_jsymbolic.csv",
+  "split": "grouped",
+  "features": "texture",
+  "task": "composer",
+  "models": [
+    "lightgbm"
+  ],
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "out_root": "/home/viviansobers/Documents/SEM 5/ML/ML Project/results",
+  "seed": 1,
+  "model": "lightgbm",
+  "grid": [
+    {
+      "n_estimators": 300,
+      "reg_lambda": 1.0,
+      "learning_rate": 0.05
+    },
+    {
+      "n_estimators": 300,
+      "reg_lambda": 1.0,
+      "learning_rate": 0.1
+    },
+    {
+      "n_estimators": 300,
+      "reg_lambda": 10.0,
+      "learning_rate": 0.05
+    },
+    {
+      "n_estimators": 300,
+      "reg_lambda": 10.0,
+      "learning_rate": 0.1
+    },
+    {
+      "n_estimators": 700,
+      "reg_lambda": 1.0,
+      "learning_rate": 0.05
+    },
+    {
+      "n_estimators": 700,
+      "reg_lambda": 1.0,
+      "learning_rate": 0.1
+    },
+    {
+      "n_estimators": 700,
+      "reg_lambda": 10.0,
+      "learning_rate": 0.05
+    },
+    {
+      "n_estimators": 700,
+      "reg_lambda": 10.0,
+      "learning_rate": 0.1
+    }
+  ],
+  "best_params": {
+    "n_estimators": 700,
+    "reg_lambda": 1.0,
+    "learning_rate": 0.05
+  },
+  "labels": [
+    "bach",
+    "beethoven",
+    "brahms",
+    "chopin",
+    "clementi",
+    "handel",
+    "haydn",
+    "maier",
+    "mendelssohn",
+    "mozart",
+    "scarlatti",
+    "schubert",
+    "schumann",
+    "vivaldi"
+  ],
+  "n_features": 24,
+  "split_sizes": {
+    "train": 1798,
+    "dev": 589,
+    "test": 602
+  },
+  "environment": {
+    "git_commit": "45be98db85413941907bc6f86654dfd14123e1a1",
+    "git_dirty": false,
+    "python": "3.13.14",
+    "packages": {
+      "numpy": "2.5.3",
+      "pandas": "3.0.6",
+      "scikit-learn": "1.9.1",
+      "lightgbm": "4.7.0",
+      "music21": "10.5.0"
+    }
+  }
+}
