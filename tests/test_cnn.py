@@ -70,3 +70,24 @@ def test_load_rolls_builds_and_reuses_cache(tmp_path, midi_factory):
     cat.write_text("broken")                       # second call must not read the catalog again
     X2, *_ = load_rolls(tmp_path / "rolls.npz", cat)
     assert (X2 == X).all()
+
+
+def test_cnn_command_writes_runs(tmp_path, midi_factory, monkeypatch):
+    import json
+
+    import pandas as pd
+
+    from composer_clf.cnn import run
+
+    cat = _toy_catalog(tmp_path, midi_factory)
+    monkeypatch.setattr(run, "CACHE", tmp_path / "rolls.npz")
+    monkeypatch.setattr(run, "CATALOG", cat)
+    run.main(["--exp", "toy", "--augment", "--repeats", "2", "--epochs", "2", "--batch-size", "4",
+              "--seeds", "0", "--out-root", str(tmp_path / "results")])
+    out = tmp_path / "results" / "toy"
+    metrics = json.loads((out / "cnn" / "seed0" / "metrics.json").read_text())
+    config = json.loads((out / "cnn" / "seed0" / "config.json").read_text())
+    assert set(metrics) >= {"best_epoch", "train_accuracy", "dev", "test", "test_accuracy_ci95"}
+    assert config["augment"] is True and config["repeats"] == 2 and config["labels"] == ["A", "B"]
+    assert len(pd.read_csv(out / "cnn" / "seed0" / "dev_search.csv")) == 2
+    assert pd.read_csv(out / "summary.csv").model.tolist() == ["cnn"]

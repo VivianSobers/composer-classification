@@ -1,11 +1,16 @@
 """E5: piano-roll CNN on MAESTRO's official split."""
+import argparse
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import torch
 
 from composer_clf import paths
+from composer_clf.cnn.train import predict, train_cnn
+from composer_clf.evaluate import bootstrap_ci, compute_metrics
 from composer_clf.pianoroll import midi_to_roll
+from composer_clf.run_tabular import environment, save_run, summarize
 
 CACHE = paths.DATA_PROCESSED / "maestro_rolls.npz"
 CATALOG = paths.DATA_PROCESSED / "maestro_catalog.csv"
@@ -22,3 +27,46 @@ def load_rolls(cache: Path = CACHE, catalog_csv: Path = CATALOG):
                             labels=np.array(labels))
     data = np.load(cache, allow_pickle=True)
     return data["X"], data["y"], data["split"], data["path"], [str(s) for s in data["labels"]]
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--exp", required=True)
+    parser.add_argument("--augment", action="store_true")
+    parser.add_argument("--repeats", type=int, default=1)
+    parser.add_argument("--epochs", type=int, default=10)
+    parser.add_argument("--lr", type=float, default=3e-4)
+    parser.add_argument("--batch-size", type=int, default=32)
+    parser.add_argument("--seeds", nargs="+", type=int, default=[0, 1, 2, 3, 4])
+    parser.add_argument("--out-root", type=Path, default=paths.RESULTS)
+    args = parser.parse_args(argv)
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    X, y, split, file_paths, labels = load_rolls(CACHE, CATALOG)
+    env = environment(["numpy", "torch", "pretty_midi"])
+    names = np.array(labels)
+    for seed in args.seeds:
+        model, history, best_epoch = train_cnn(X, y, split, len(labels), seed, args.augment, args.repeats,
+                                               args.epochs, args.lr, args.batch_size, device)
+        sets = {s: split == s for s in ("train", "dev", "test")}
+        preds = {s: names[predict(model, X[m], device)] for s, m in sets.items()}
+        truth = {s: names[y[m]] for s, m in sets.items()}
+        metrics = {"best_epoch": best_epoch,
+                   "train_accuracy": float((preds["train"] == truth["train"]).mean()),
+                   "dev": compute_metrics(truth["dev"], preds["dev"], labels),
+                   "test": compute_metrics(truth["test"], preds["test"], labels),
+                   "test_accuracy_ci95": bootstrap_ci(truth["test"], preds["test"], seed=seed)}
+        config = {**vars(args), "out_root": str(args.out_root), "seed": seed, "model": "cnn",
+                  "device": torch.cuda.get_device_name() if device == "cuda" else "cpu",
+                  "labels": labels, "split_sizes": {s: int(m.sum()) for s, m in sets.items()},
+                  "environment": env}
+        # For the CNN the dev search is the per-epoch selection, so the history goes in dev_search.csv.
+        save_run(args.out_root / args.exp / "cnn" / f"seed{seed}", config, metrics, pd.DataFrame(history),
+                 pd.DataFrame({"path": file_paths[sets["test"]], "y_true": truth["test"], "y_pred": preds["test"]}))
+        print(f"{args.exp} seed={seed}: best epoch {best_epoch}, test acc {metrics['test']['accuracy']:.3f}",
+              flush=True)
+    print(summarize(args.out_root / args.exp).to_string(index=False))
+
+
+if __name__ == "__main__":
+    main()
