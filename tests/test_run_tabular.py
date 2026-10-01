@@ -71,3 +71,20 @@ def test_save_run_and_summarize(tmp_path):
     assert summary.loc["knn", "test_accuracy_mean"] == pytest.approx(0.6)
     assert summary.loc["svm", "test_accuracy_std"] == 0.0
     assert len(pd.read_csv(tmp_path / "runs.csv")) == 4
+
+
+def test_main_writes_reproducible_runs(tmp_path):
+    data = synthetic_data()
+    data.frame[["path", "composer", "piece_id"]].to_csv(tmp_path / "cat.csv", index=False)
+    data.frame[["path", *data.feature_columns]].to_csv(tmp_path / "feat.csv", index=False)
+    out = tmp_path / "results"
+    run_tabular.main(["--exp", "smoke", "--catalog", str(tmp_path / "cat.csv"),
+                      "--features-csv", str(tmp_path / "feat.csv"), "--models", "knn", "softmax",
+                      "--seeds", "0", "1", "--out-root", str(out)])
+    run = out / "smoke" / "knn" / "seed1"
+    config = json.loads((run / "config.json").read_text())
+    assert config["seed"] == 1 and config["model"] == "knn" and "packages" in config["environment"]
+    assert config["best_params"] in [{"n_neighbors": k} for k in [1, 3, 5, 7, 11, 15, 21, 31]]
+    assert config["split_sizes"]["test"] > 0 and config["n_features"] == 6
+    summary = pd.read_csv(out / "smoke" / "summary.csv")
+    assert set(summary.model) == {"knn", "softmax"} and (summary.n_seeds == 2).all()
