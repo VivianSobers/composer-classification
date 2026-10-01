@@ -20,3 +20,6 @@ models/
 docs/superpowers/
 .vscode/
 .idea/
+
+# Office lock files
+.~lock.*
