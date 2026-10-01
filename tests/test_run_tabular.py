@@ -72,3 +72,19 @@ def test_main_writes_reproducible_runs(tmp_path, synthetic_tabular):
     assert config["split_sizes"]["test"] > 0 and config["n_features"] == 6
     summary = pd.read_csv(out / "smoke" / "summary.csv")
     assert set(summary.model) == {"knn", "softmax"} and (summary.n_seeds == 2).all()
+
+
+def test_config_stores_repo_relative_inputs(tmp_path, synthetic_tabular, monkeypatch):
+    from composer_clf import paths
+
+    data = synthetic_tabular
+    monkeypatch.setattr(paths, "ROOT", tmp_path)
+    (tmp_path / "data").mkdir()
+    data.frame[["path", "composer", "piece_id"]].to_csv(tmp_path / "data" / "cat.csv", index=False)
+    data.frame[["path", *data.feature_columns]].to_csv(tmp_path / "data" / "feat.csv", index=False)
+    run_tabular.main(["--exp", "rel", "--catalog", str(tmp_path / "data" / "cat.csv"),
+                      "--features-csv", str(tmp_path / "data" / "feat.csv"), "--models", "knn",
+                      "--seeds", "0", "--out-root", str(tmp_path / "results")])
+    config = json.loads((tmp_path / "results" / "rel" / "knn" / "seed0" / "config.json").read_text())
+    assert config["catalog"] == "data/cat.csv" and config["features_csv"] == "data/feat.csv"
+    assert config["out_root"] == "results"

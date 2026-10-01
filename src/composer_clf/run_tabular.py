@@ -32,6 +32,12 @@ def environment(packages=PACKAGES) -> dict:
             "packages": {p: metadata.version(p) for p in packages}}
 
 
+def portable(p) -> str:
+    """Repo-relative path for files inside the repo, so configs stay valid on other machines."""
+    p = Path(p).resolve()
+    return paths.relative(p) if p.is_relative_to(paths.ROOT) else str(p)
+
+
 def make_split(kind: str, data, seed: int) -> np.ndarray:
     if kind == "grouped":
         return grouped_split(data.y, data.groups, seed)
@@ -123,8 +129,8 @@ def main(argv=None) -> pd.DataFrame:
         split = make_split(args.split, data, seed)
         for model in args.models:
             best_params, metrics, search, predictions = tune_and_test(model, data, split, labels, seed)
-            config = {**vars(args), "catalog": str(catalog), "features_csv": str(features_csv),
-                      "out_root": str(args.out_root), "seed": seed, "model": model,
+            config = {**vars(args), "catalog": portable(catalog), "features_csv": portable(features_csv),
+                      "out_root": portable(args.out_root), "seed": seed, "model": model,
                       "grid": GRIDS[model], "best_params": best_params, "labels": labels,
                       "n_features": len(data.feature_columns),
                       "split_sizes": {s: int((split == s).sum()) for s in ("train", "dev", "test")},
