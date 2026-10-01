@@ -22,7 +22,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest==9.1.1"]
 cnn = ["torch"]
-app = ["streamlit"]
+app = ["streamlit==1.64.0", "altair==6.3.0"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
