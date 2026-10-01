@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "composer-clf"
+version = "0.1.0"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+  "numpy==2.5.3",
+  "pandas==3.0.6",
+  "scikit-learn==1.9.1",
+  "lightgbm==4.7.0",
+  "music21==10.5.0",
+  "pretty_midi==0.2.11.post0",
+  "mido==1.3.3",
+  "scipy==1.18.1",
+  "joblib==1.6.0",
+  "matplotlib==3.11.2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==9.1.1"]
+cnn = ["torch"]
+app = ["streamlit"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+composer_clf = ["features/group_lists/*.txt"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["slow: needs Java and the jSymbolic jar"]
+addopts = "-m 'not slow'"
