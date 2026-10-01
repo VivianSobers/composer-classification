@@ -242,5 +242,29 @@ def plot_cnn_curves(results_dir: Path, out: Path) -> Path:
     return _save(fig, ax, "CNN dev accuracy during training", "Epoch", out)
 
 
+def make_figures(results_dir: Path = paths.RESULTS, bundle_path: Path = paths.MODELS / "lightgbm_hf.joblib"):
+    """Draw every figure whose inputs exist into results/figures; returns the files written."""
+    results_dir = Path(results_dir)
+    fig_dir = results_dir / "figures"
+    has = lambda exp: (results_dir / exp / "summary.csv").exists()  # noqa: E731
+    jobs = []
+    if has("e1_composers"):
+        jobs.append(lambda: plot_model_comparison(results_dir, fig_dir / "model_comparison.png"))
+        jobs.append(lambda: plot_confusion(results_dir, fig_dir / "confusion_lightgbm.png"))
+    if has("e1_composers") and has("e2_random_split"):
+        jobs.append(lambda: plot_leakage(results_dir, fig_dir / "split_leakage.png"))
+    if any(has(f"e3_{task}_{g}") for task in ("composer", "era") for g in GROUP_NAMES):
+        jobs.append(lambda: plot_ablation(results_dir, fig_dir / "feature_groups.png"))
+    if Path(bundle_path).exists():
+        jobs.append(lambda: plot_importance(bundle_path, fig_dir / "feature_importance.png"))
+    if has("e4_maestro_tabular"):
+        jobs.append(lambda: plot_maestro_comparison(results_dir, fig_dir / "maestro_comparison.png"))
+    if any(has(exp) for exp in CNN_RUNS):
+        jobs.append(lambda: plot_cnn_curves(results_dir, fig_dir / "cnn_dev_curves.png"))
+    return [job() for job in jobs]
+
+
 if __name__ == "__main__":
     print(write_tables())
+    for figure in make_figures():
+        print(figure)

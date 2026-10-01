@@ -111,3 +111,12 @@ def test_plot_cnn_curves(tmp_path):
     _fake_exp(tmp_path, "e5_cnn_noaug", ["cnn"])
     _fake_exp(tmp_path, "e5_cnn_aug10", ["cnn"])
     assert _is_png(plot_cnn_curves(tmp_path, tmp_path / "fig.png"))
+
+
+def test_make_figures_skips_missing_experiments(tmp_path):
+    from composer_clf.report import make_figures
+
+    _fake_exp(tmp_path, "e1_composers", ["lightgbm", "svm"])
+    made = make_figures(tmp_path, bundle_path=tmp_path / "missing.joblib")
+    assert sorted(p.name for p in made) == ["confusion_lightgbm.png", "model_comparison.png"]
+    assert all(_is_png(p) for p in made)
