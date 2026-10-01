@@ -1,6 +1,6 @@
 import numpy as np
 
-from composer_clf.splits import grouped_split
+from composer_clf.splits import grouped_split, random_split
 
 
 def make(n_classes=3, groups_per_class=10, files_per_group=6):
@@ -31,3 +31,11 @@ def test_grouped_split_deterministic_and_seed_dependent():
     y, g = make()
     assert (grouped_split(y, g, 3) == grouped_split(y, g, 3)).all()
     assert (grouped_split(y, g, 3) != grouped_split(y, g, 4)).any()
+
+
+def test_random_split_sizes_and_classes():
+    y, _ = make()
+    split = random_split(y, seed=0)
+    for part in ("train", "dev", "test"):
+        assert set(y[split == part]) == set(y)
+    assert abs((split == "test").mean() - 0.2) < 0.05

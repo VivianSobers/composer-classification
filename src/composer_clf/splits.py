@@ -1,6 +1,6 @@
 """Train/dev/test assignment: grouped by piece (default) or random by file."""
 import numpy as np
-from sklearn.model_selection import StratifiedGroupKFold
+from sklearn.model_selection import StratifiedGroupKFold, StratifiedKFold
 
 
 def _assign(folds: list[np.ndarray], n: int) -> np.ndarray:
@@ -15,4 +15,12 @@ def grouped_split(y, groups, seed: int, n_folds: int = 5) -> np.ndarray:
     y, groups = np.asarray(y), np.asarray(groups)
     sgkf = StratifiedGroupKFold(n_splits=n_folds, shuffle=True, random_state=seed)
     folds = [test for _, test in sgkf.split(np.zeros(len(y)), y, groups)]
+    return _assign(folds, len(y))
+
+
+def random_split(y, seed: int, n_folds: int = 5) -> np.ndarray:
+    """About 60/20/20 by file, stratified by label, ignoring which piece a file belongs to."""
+    y = np.asarray(y)
+    skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=seed)
+    folds = [test for _, test in skf.split(np.zeros(len(y)), y)]
     return _assign(folds, len(y))
