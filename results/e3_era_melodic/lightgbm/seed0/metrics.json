@@ -1,0 +1,106 @@
+{
+  "best_config": 4,
+  "train_accuracy": 1.0,
+  "dev": {
+    "accuracy": 0.8582375478927203,
+    "balanced_accuracy": 0.722184493491794,
+    "macro_precision": 0.7807940317841308,
+    "macro_recall": 0.722184493491794,
+    "macro_f1": 0.7474199081341938,
+    "per_class": {
+      "baroque": {
+        "precision": 0.8985148514851485,
+        "recall": 0.9552631578947368,
+        "f1": 0.9260204081632653,
+        "support": 380
+      },
+      "classical": {
+        "precision": 0.6984126984126984,
+        "recall": 0.55,
+        "f1": 0.6153846153846154,
+        "support": 80
+      },
+      "romantic": {
+        "precision": 0.7454545454545455,
+        "recall": 0.6612903225806451,
+        "f1": 0.7008547008547008,
+        "support": 62
+      }
+    },
+    "confusion": [
+      [
+        363,
+        11,
+        6
+      ],
+      [
+        28,
+        44,
+        8
+      ],
+      [
+        13,
+        8,
+        41
+      ]
+    ],
+    "labels": [
+      "baroque",
+      "classical",
+      "romantic"
+    ]
+  },
+  "test": {
+    "accuracy": 0.8298279158699808,
+    "balanced_accuracy": 0.7294203749117916,
+    "macro_precision": 0.723463710984829,
+    "macro_recall": 0.7294203749117916,
+    "macro_f1": 0.7236928378943198,
+    "per_class": {
+      "baroque": {
+        "precision": 0.9007832898172323,
+        "recall": 0.9078947368421053,
+        "f1": 0.9043250327653998,
+        "support": 380
+      },
+      "classical": {
+        "precision": 0.6029411764705882,
+        "recall": 0.5061728395061729,
+        "f1": 0.5503355704697986,
+        "support": 81
+      },
+      "romantic": {
+        "precision": 0.6666666666666666,
+        "recall": 0.7741935483870968,
+        "f1": 0.7164179104477612,
+        "support": 62
+      }
+    },
+    "confusion": [
+      [
+        345,
+        21,
+        14
+      ],
+      [
+        30,
+        41,
+        10
+      ],
+      [
+        8,
+        6,
+        48
+      ]
+    ],
+    "labels": [
+      "baroque",
+      "classical",
+      "romantic"
+    ]
+  },
+  "test_accuracy_ci95": [
+    0.7992351816443595,
+    0.8604684512428298
+  ]
+}
