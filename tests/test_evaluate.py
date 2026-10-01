@@ -13,3 +13,14 @@ def test_accuracy_and_macro_hand_values():
     assert m["macro_precision"] == pytest.approx((2 / 3 + 2 / 3 + 0) / 3)
     assert m["macro_f1"] == pytest.approx((2 / 3 + 0.8 + 0) / 3)
     assert m["per_class"]["b"] == {"precision": pytest.approx(2 / 3), "recall": 1.0, "f1": pytest.approx(0.8), "support": 2}
+
+
+def test_balanced_accuracy_and_confusion():
+    m = compute_metrics(Y_TRUE, Y_PRED, ["a", "b", "c"])
+    assert m["balanced_accuracy"] == pytest.approx((2 / 3 + 1 + 0) / 3)
+    assert m["confusion"] == [[2, 1, 0], [0, 2, 0], [1, 0, 0]]
+
+
+def test_balanced_accuracy_ignores_absent_classes():
+    m = compute_metrics(["a", "a", "b"], ["a", "b", "b"], ["a", "b", "z"])
+    assert m["balanced_accuracy"] == pytest.approx((0.5 + 1.0) / 2)
