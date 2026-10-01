@@ -8,3 +8,7 @@ def test_relative_roundtrip():
 
 def test_root_contains_pyproject():
     assert (paths.ROOT / "pyproject.toml").exists()
+
+
+def test_midi_factory_writes_file(midi_factory):
+    assert midi_factory("a.mid").stat().st_size > 0
