@@ -92,3 +92,12 @@ The demo is a Streamlit app. You upload a MIDI file, and it shows the predicted 
 .venv/bin/python -m composer_clf.train_final
 .venv/bin/streamlit run app/streamlit_app.py
 ```
+
+## Differences from the original paper
+
+- Data. The paper used about 10,000 MIDI files donated by Classical Archives, which were never released. We use the two public datasets above, so our composer set and our numbers are not directly comparable with theirs.
+- Splits. The paper split files at random after removing duplicate titles, so different movements or versions of one work could land in both train and test. We group every split by piece, and E2 measures what a random split would have reported instead.
+- Scaling. The paper's code fitted a separate `StandardScaler` on the dev set. Ours fits the scaler on the training set only, inside each model's pipeline.
+- Tuning. The paper tuned LightGBM by hand and the SVM by grid search. Every model here gets the same budget of eight configurations, chosen on dev macro-F1.
+- CNN evaluation. The paper's code set `model.training = False` before scoring, which leaves BatchNorm in training mode, and its released code never scores the test set. We call `model.eval()`, choose the epoch on the dev set and score the test set once.
+- MLP. The paper used PyTorch; we use scikit-learn's `MLPClassifier` with the same architecture and optimizer settings.
