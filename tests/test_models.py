@@ -3,7 +3,7 @@ import pytest
 
 from composer_clf.models import GRIDS, build
 
-IMPLEMENTED = ["lightgbm"]
+IMPLEMENTED = ["lightgbm", "softmax"]
 
 
 def toy_data():
