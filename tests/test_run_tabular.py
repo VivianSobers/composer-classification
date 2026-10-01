@@ -2,6 +2,7 @@ import json
 import re
 
 import numpy as np
+import pytest
 import pandas as pd
 
 from composer_clf import run_tabular
@@ -50,3 +51,23 @@ def test_make_split_kinds():
     assert set(run_tabular.make_split("random", data, 1)) == {"train", "dev", "test"}
     data.frame["split"] = "train"
     assert (run_tabular.make_split("official", data, 1) == "train").all()
+
+
+def _fake_metrics(acc):
+    return {"train_accuracy": 1.0, "dev": {"macro_f1": acc - 0.1},
+            "test": {"accuracy": acc, "macro_f1": acc - 0.05, "balanced_accuracy": acc - 0.02}}
+
+
+def test_save_run_and_summarize(tmp_path):
+    for model, accs in {"knn": [0.5, 0.7], "svm": [0.8, 0.8]}.items():
+        for seed, acc in enumerate(accs):
+            run_tabular.save_run(tmp_path / model / f"seed{seed}", {"seed": seed, "model": model},
+                                 _fake_metrics(acc), pd.DataFrame({"config": [0]}),
+                                 pd.DataFrame({"path": ["x"], "y_true": ["a"], "y_pred": ["a"]}))
+    assert json.loads((tmp_path / "knn" / "seed1" / "config.json").read_text())["seed"] == 1
+    assert (tmp_path / "svm" / "seed0" / "predictions.csv").exists()
+    summary = run_tabular.summarize(tmp_path).set_index("model")
+    assert summary.loc["knn", "n_seeds"] == 2
+    assert summary.loc["knn", "test_accuracy_mean"] == pytest.approx(0.6)
+    assert summary.loc["svm", "test_accuracy_std"] == 0.0
+    assert len(pd.read_csv(tmp_path / "runs.csv")) == 4

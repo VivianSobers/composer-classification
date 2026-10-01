@@ -3,6 +3,7 @@ import json
 import platform
 import subprocess
 from importlib import metadata
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -13,6 +14,7 @@ from composer_clf.models import GRIDS, build
 from composer_clf.splits import grouped_split, random_split
 
 PACKAGES = ["numpy", "pandas", "scikit-learn", "lightgbm", "music21"]
+METRIC_COLUMNS = ["test_accuracy", "test_macro_f1", "test_balanced_accuracy", "dev_macro_f1", "train_accuracy"]
 
 
 def _git(*args: str) -> str:
@@ -60,3 +62,31 @@ def tune_and_test(model: str, data, split: np.ndarray, labels: list[str], seed: 
     }
     predictions = pd.DataFrame({"path": data.frame.path[te].to_numpy(), "y_true": y[te], "y_pred": test_pred})
     return GRIDS[model][best_i], metrics, pd.DataFrame(rows), predictions
+
+
+def save_run(run_dir: Path, config: dict, metrics: dict, search: pd.DataFrame, predictions: pd.DataFrame):
+    run_dir.mkdir(parents=True, exist_ok=True)
+    (run_dir / "config.json").write_text(json.dumps(config, indent=2, default=str))
+    (run_dir / "metrics.json").write_text(json.dumps(metrics, indent=2))
+    search.to_csv(run_dir / "dev_search.csv", index=False)
+    predictions.to_csv(run_dir / "predictions.csv", index=False)
+
+
+def summarize(exp_dir: Path) -> pd.DataFrame:
+    """Write runs.csv (one row per model and seed) and summary.csv (mean and std per model)."""
+    rows = []
+    for metrics_file in sorted(Path(exp_dir).glob("*/seed*/metrics.json")):
+        m = json.loads(metrics_file.read_text())
+        rows.append({"model": metrics_file.parent.parent.name, "seed": int(metrics_file.parent.name[4:]),
+                     "test_accuracy": m["test"]["accuracy"], "test_macro_f1": m["test"]["macro_f1"],
+                     "test_balanced_accuracy": m["test"]["balanced_accuracy"],
+                     "dev_macro_f1": m["dev"]["macro_f1"], "train_accuracy": m["train_accuracy"]})
+    runs = pd.DataFrame(rows)
+    runs.to_csv(Path(exp_dir) / "runs.csv", index=False)
+    aggregations = {"n_seeds": ("seed", "nunique")}
+    for col in METRIC_COLUMNS:
+        aggregations[f"{col}_mean"] = (col, "mean")
+        aggregations[f"{col}_std"] = (col, "std")
+    summary = runs.groupby("model").agg(**aggregations).reset_index()
+    summary.to_csv(Path(exp_dir) / "summary.csv", index=False)
+    return summary
