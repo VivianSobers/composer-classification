@@ -11,6 +11,17 @@ from composer_clf.run_tabular import make_split
 from composer_clf.tabular import load_tabular
 
 
+def _input_path(config: dict, key: str) -> Path:
+    """The recorded input file, or this machine's standard copy when the run was made elsewhere."""
+    recorded = Path(config[key])
+    for candidate in (recorded, paths.resolve(recorded)):
+        if candidate.exists():
+            return candidate
+    if key == "catalog":
+        return paths.DATA_PROCESSED / f"{config['dataset']}_catalog.csv"
+    return paths.DATA_PROCESSED / f"{config['dataset']}_{config['extractor']}.csv"
+
+
 def main(argv=None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--exp", default="e1_composers")
@@ -21,7 +32,8 @@ def main(argv=None) -> None:
 
     run_dir = args.results_root / args.exp / "lightgbm" / f"seed{args.seed}"
     config = json.loads((run_dir / "config.json").read_text())
-    data = load_tabular(config["catalog"], config["features_csv"], config["features"], config["task"])
+    data = load_tabular(_input_path(config, "catalog"), _input_path(config, "features_csv"),
+                        config["features"], config["task"])
     split = make_split(config["split"], data, args.seed)
     train = split == "train"
     pipe = build("lightgbm", config["best_params"], args.seed).fit(data.X[train], data.y[train])
