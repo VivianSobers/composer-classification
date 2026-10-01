@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from composer_clf.data.catalog import dedup_key, deduplicate, normalize_composer, piece_id, select_composers
+from composer_clf.data.catalog import build_maestro_catalog, dedup_key, deduplicate, normalize_composer, piece_id, select_composers
 
 
 def test_aliases():
@@ -75,3 +75,17 @@ def test_select_composers_needs_files_and_pieces():
     assert set(kept.composer) == {"aa"}
     assert summary.loc["bb", "pieces"] == 1 and not summary.loc["bb", "kept"]
     assert "unknown_artist" not in summary.index
+
+
+def test_maestro_catalog(tmp_path):
+    meta = pd.DataFrame({
+        "canonical_composer": ["A"] * 3 + ["B"] * 1 + ["A / B"] * 2,
+        "canonical_title": ["t1", "t1", "t2", "t3", "t4", "t4"],
+        "split": ["train", "validation", "test", "train", "train", "test"],
+        "midi_filename": [f"2004/f{i}.midi" for i in range(6)],
+    })
+    meta.to_csv(tmp_path / "maestro-v3.0.0.csv", index=False)
+    cat = build_maestro_catalog(tmp_path, min_performances=2)
+    assert list(cat.composer) == ["A", "A", "A"]
+    assert list(cat.split) == ["train", "dev", "test"]
+    assert cat.piece_id.iloc[0] == "A:t1"

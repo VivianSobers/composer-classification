@@ -4,8 +4,11 @@ from pathlib import Path
 
 import pandas as pd
 
+from composer_clf import paths
+
 COMPOSER_ALIASES = {"haendel": "handel", "mendelsonn": "mendelssohn"}
 EXCLUDED_COMPOSERS = {"unknown_artist"}
+MAESTRO_SPLITS = {"train": "train", "validation": "dev", "test": "test"}
 
 _CATALOG_RE = re.compile(r"(?:^|_)(bwv|kv|k|hwv|rv|d|woo)(\d+)(?=[a-z_]|$)")
 _OPUS_RE = re.compile(r"(?:^|_)op(\d+)")
@@ -76,3 +79,20 @@ def select_composers(df: pd.DataFrame, min_files: int = 50, min_pieces: int = 5)
     kept = summary.index[summary.kept]
     return (df[df.composer.isin(kept)].reset_index(drop=True),
             summary.sort_values("files", ascending=False))
+
+
+def build_maestro_catalog(maestro_dir: Path, min_performances: int = 50) -> pd.DataFrame:
+    """Single-composer MAESTRO performances of composers with enough performances."""
+    meta = pd.read_csv(Path(maestro_dir) / "maestro-v3.0.0.csv")
+    meta = meta[~meta.canonical_composer.str.contains("/")]
+    counts = meta.canonical_composer.value_counts()
+    meta = meta[meta.canonical_composer.isin(counts.index[counts >= min_performances])]
+    base = Path(maestro_dir).resolve()
+    rel = [paths.relative(base / f) if (base / f).is_relative_to(paths.ROOT) else str(base / f)
+           for f in meta.midi_filename]
+    return pd.DataFrame({
+        "path": rel,
+        "composer": meta.canonical_composer.to_numpy(),
+        "piece_id": (meta.canonical_composer + ":" + meta.canonical_title).to_numpy(),
+        "split": meta.split.map(MAESTRO_SPLITS).to_numpy(),
+    })
