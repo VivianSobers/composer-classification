@@ -24,3 +24,32 @@ def test_write_tables_formats_mean_and_std(tmp_path):
     text = write_tables(tmp_path).read_text()
     assert text.splitlines()[0].startswith("| experiment | model | seeds |")
     assert "| e1_composers | lightgbm | 5 | 0.700 ± 0.020 | 0.600 ± 0.030 |" in text
+
+
+def _fake_exp(root, exp, models, acc=0.7, seeds=(0, 1)):
+    import json
+
+    for model in models:
+        for seed in seeds:
+            d = root / exp / model / f"seed{seed}"
+            d.mkdir(parents=True)
+            m = {"train_accuracy": 1.0, "dev": {"macro_f1": acc},
+                 "test": {"accuracy": acc + 0.01 * seed, "macro_f1": acc - 0.1, "balanced_accuracy": acc,
+                          "labels": ["a", "b", "c"], "confusion": [[5, 1, 0], [2, 3, 1], [0, 0, 4]]}}
+            (d / "metrics.json").write_text(json.dumps(m))
+            pd.DataFrame({"epoch": [1, 2, 3], "train_loss": [1.0, 0.5, 0.2],
+                          "dev_accuracy": [0.3, 0.5, 0.6], "dev_macro_f1": [0.2, 0.4, 0.5]}
+                         ).to_csv(d / "dev_search.csv", index=False)
+    from composer_clf.run_tabular import summarize
+    summarize(root / exp)
+
+
+def _is_png(path):
+    return path.exists() and path.read_bytes()[:4] == b"\x89PNG"
+
+
+def test_plot_model_comparison(tmp_path):
+    from composer_clf.report import plot_model_comparison
+
+    _fake_exp(tmp_path, "e1_composers", ["lightgbm", "svm", "knn"])
+    assert _is_png(plot_model_comparison(tmp_path, tmp_path / "fig.png"))
