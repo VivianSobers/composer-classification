@@ -28,3 +28,14 @@ def test_groups_keep_column_order():
 def test_unknown_group():
     with pytest.raises(ValueError):
         feature_columns("harmony", COLUMNS)
+
+
+@pytest.mark.parametrize("group, size", [("instrumentation", 493), ("no_instrumentation", 1495 - 493)])
+def test_instrumentation_split(group, size):
+    assert len(feature_columns(group, COLUMNS)) == size
+
+
+def test_instrumentation_includes_histograms_and_scalars():
+    cols = feature_columns("instrumentation", COLUMNS)
+    assert "Violin_Prevalence" in cols and "Pitched_Instruments_Present_127" in cols
+    assert "Pitch_Class_Histogram_0" not in cols
