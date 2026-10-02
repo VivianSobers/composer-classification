@@ -2,8 +2,8 @@
   "exp": "e3_composer_rhythm",
   "dataset": "hf",
   "extractor": "jsymbolic",
-  "catalog": "/home/viviansobers/Documents/SEM 5/ML/ML Project/data/processed/hf_catalog.csv",
-  "features_csv": "/home/viviansobers/Documents/SEM 5/ML/ML Project/data/processed/hf_jsymbolic.csv",
+  "catalog": "data/processed/hf_catalog.csv",
+  "features_csv": "data/processed/hf_jsymbolic.csv",
   "split": "grouped",
   "features": "rhythm",
   "task": "composer",
@@ -17,7 +17,7 @@
     3,
     4
   ],
-  "out_root": "/home/viviansobers/Documents/SEM 5/ML/ML Project/results",
+  "out_root": "results",
   "seed": 2,
   "model": "lightgbm",
   "grid": [
@@ -63,9 +63,9 @@
     }
   ],
   "best_params": {
-    "n_estimators": 700,
-    "reg_lambda": 1.0,
-    "learning_rate": 0.05
+    "n_estimators": 300,
+    "reg_lambda": 10.0,
+    "learning_rate": 0.1
   },
   "labels": [
     "bach",
@@ -85,12 +85,12 @@
   ],
   "n_features": 255,
   "split_sizes": {
-    "train": 1798,
-    "dev": 589,
+    "train": 1797,
+    "dev": 590,
     "test": 602
   },
   "environment": {
-    "git_commit": "45be98db85413941907bc6f86654dfd14123e1a1",
+    "git_commit": "3f90c6307f24e54e892a31136201877bb8aac67b",
     "git_dirty": false,
     "python": "3.13.14",
     "packages": {
