@@ -58,10 +58,10 @@ def main(argv=None):
     X, y, split, file_paths, labels = load_rolls(CACHE, CATALOG)
     env = environment(["numpy", "torch", "pretty_midi"])
     names = np.array(labels)
+    sets = {s: split == s for s in ("train", "dev", "test")}
     for seed in args.seeds:
         model, history, best_epoch = train_cnn(X, y, split, len(labels), seed, args.augment, args.repeats,
                                                args.epochs, args.lr, args.batch_size, device)
-        sets = {s: split == s for s in ("train", "dev", "test")}
         preds = {s: names[predict(model, X[m], device)] for s, m in sets.items()}
         truth = {s: names[y[m]] for s, m in sets.items()}
         metrics = {"best_epoch": best_epoch,
