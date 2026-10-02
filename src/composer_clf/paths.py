@@ -23,3 +23,9 @@ def resolve(rel: str | Path) -> Path:
 def relative(p: str | Path) -> str:
     """Repo-relative POSIX path for a file inside the repo."""
     return Path(p).resolve().relative_to(ROOT).as_posix()
+
+
+def portable(p: str | Path) -> str:
+    """Repo-relative path for files inside the repo, absolute otherwise; safe to store in outputs."""
+    p = Path(p).resolve()
+    return relative(p) if p.is_relative_to(ROOT) else str(p)

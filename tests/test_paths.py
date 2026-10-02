@@ -12,3 +12,8 @@ def test_root_contains_pyproject():
 
 def test_midi_factory_writes_file(midi_factory):
     assert midi_factory("a.mid").stat().st_size > 0
+
+
+def test_portable_relative_inside_absolute_outside(tmp_path):
+    assert paths.portable(paths.ROOT / "data" / "x.csv") == "data/x.csv"
+    assert paths.portable(tmp_path / "y.csv") == str((tmp_path / "y.csv").resolve())

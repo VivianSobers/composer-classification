@@ -57,3 +57,18 @@ def test_extract_cli_passes_jvm_memory(tmp_path, midi_factory, monkeypatch):
     extract.main(["--dataset", "hf", "--shards", "1", "--workers", "1", "--xmx", "2m", "--retry-xmx", "2m"])
 
     assert (tmp_path / "processed" / "hf_jsymbolic_failed.txt").read_text() == "bach-x.mid\n"
+
+
+def test_extract_cli_keeps_out_of_repo_paths(tmp_path, monkeypatch):
+    from composer_clf.features import jsymbolic
+
+    outside = tmp_path / "elsewhere" / "bach-x.mid"           # e.g. data/raw symlinked to another disk
+    monkeypatch.setattr(paths, "DATA_PROCESSED", tmp_path / "processed")
+    (tmp_path / "processed").mkdir()
+    pd.DataFrame({"path": [str(outside)]}).to_csv(tmp_path / "processed" / "hf_catalog.csv", index=False)
+    fake = lambda files, *a, **k: (pd.DataFrame({"path": [str(f) for f in files], "F": [1.0]}), [])  # noqa: E731
+    monkeypatch.setattr(jsymbolic, "extract_jsymbolic", fake)
+
+    extract.main(["--dataset", "hf"])
+
+    assert list(pd.read_csv(tmp_path / "processed" / "hf_jsymbolic.csv").path) == [str(outside)]

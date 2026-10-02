@@ -31,10 +31,10 @@ def main(argv=None) -> None:
         from composer_clf.features.music21_feats import extract_music21
         feats, failed = extract_music21(files, n_jobs=args.workers)
 
-    feats["path"] = [paths.relative(p) for p in feats["path"]]
+    feats["path"] = [paths.portable(p) for p in feats["path"]]
     stem = paths.DATA_PROCESSED / f"{args.dataset}_{args.extractor}"
     feats.to_csv(f"{stem}.csv", index=False)
-    Path(f"{stem}_failed.txt").write_text("".join(f"{paths.relative(p)}\n" for p in failed))
+    Path(f"{stem}_failed.txt").write_text("".join(f"{paths.portable(p)}\n" for p in failed))
     print(f"{len(feats)} extracted, {len(failed)} failed -> {stem}.csv")
 
 
