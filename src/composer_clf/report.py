@@ -62,7 +62,7 @@ def _save(fig, ax, title: str, xlabel: str, out: Path, title_pad: int = 26) -> P
     out = Path(out)
     out.parent.mkdir(parents=True, exist_ok=True)
     fig.tight_layout()
-    fig.savefig(out, facecolor=SURFACE)
+    fig.savefig(out, facecolor=SURFACE, bbox_inches="tight", pad_inches=0.15)
     plt.close(fig)
     return out
 

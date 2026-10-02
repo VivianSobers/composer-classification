@@ -130,3 +130,14 @@ def test_maestro_rows_mark_the_cnn_as_untuned(tmp_path):
     labels = list(maestro_rows(tmp_path).label)
     assert "LightGBM (8 configs tuned on dev)" in labels
     assert "CNN, paper settings (not tuned)" in labels
+
+
+def test_save_widens_the_image_to_fit_a_long_title(tmp_path):
+    import matplotlib.image
+
+    from composer_clf.report import _figure, _save
+
+    fig, ax = _figure(2.0)
+    ax.plot([0, 1], [0, 1])
+    out = _save(fig, ax, "A title much longer than the plot area " * 4, "x", tmp_path / "fig.png")
+    assert matplotlib.image.imread(out).shape[1] > 7.5 * 200
