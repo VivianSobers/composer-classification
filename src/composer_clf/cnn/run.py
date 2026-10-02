@@ -11,7 +11,7 @@ from composer_clf import paths
 from composer_clf.cnn.train import predict, train_cnn
 from composer_clf.evaluate import bootstrap_ci, compute_metrics
 from composer_clf.pianoroll import midi_to_roll
-from composer_clf.run_tabular import environment, portable, save_run, summarize
+from composer_clf.run_tabular import environment, save_run, summarize
 
 CACHE = paths.DATA_PROCESSED / "maestro_rolls.npz"
 CATALOG = paths.DATA_PROCESSED / "maestro_catalog.csv"
@@ -69,10 +69,10 @@ def main(argv=None):
                    "dev": compute_metrics(truth["dev"], preds["dev"], labels),
                    "test": compute_metrics(truth["test"], preds["test"], labels),
                    "test_accuracy_ci95": bootstrap_ci(truth["test"], preds["test"], seed=seed)}
-        config = {**vars(args), "out_root": portable(args.out_root), "seed": seed, "model": "cnn",
+        config = {**vars(args), "out_root": paths.portable(args.out_root), "seed": seed, "model": "cnn",
                   "device": torch.cuda.get_device_name() if device == "cuda" else "cpu",
                   "torch_threads": torch.get_num_threads(),
-                  "catalog": portable(CATALOG), "catalog_md5": catalog_digest(CATALOG),
+                  "catalog": paths.portable(CATALOG), "catalog_md5": catalog_digest(CATALOG),
                   "labels": labels, "split_sizes": {s: int(m.sum()) for s, m in sets.items()},
                   "environment": env}
         # For the CNN the dev search is the per-epoch selection, so the history goes in dev_search.csv.

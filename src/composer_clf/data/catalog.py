@@ -72,17 +72,11 @@ def merge_prefix_pieces(piece_ids: pd.Series) -> pd.Series:
     return piece_ids.map(root)
 
 
-def _repo_path(p: Path) -> str:
-    """Repo-relative path when inside the repo, else the absolute path."""
-    p = Path(p).resolve()
-    return paths.relative(p) if p.is_relative_to(paths.ROOT) else str(p)
-
-
 def build_hf_catalog(raw_dir: Path) -> pd.DataFrame:
     rows = []
     for p in sorted(Path(raw_dir).glob("*.mid*")):
         composer, _ = split_name(p.name)
-        rows.append({"path": _repo_path(p), "filename": p.name, "composer": composer,
+        rows.append({"path": paths.portable(p), "filename": p.name, "composer": composer,
                      "piece_id": piece_id(p.name), "dedup_key": dedup_key(p.name),
                      "md5": hashlib.md5(p.read_bytes()).hexdigest()})
     return pd.DataFrame(rows)
@@ -121,7 +115,7 @@ def build_maestro_catalog(maestro_dir: Path, min_performances: int = 50) -> pd.D
     meta = meta[meta.canonical_composer.isin(counts.index[counts >= min_performances])]
     base = Path(maestro_dir)
     return pd.DataFrame({
-        "path": [_repo_path(base / f) for f in meta.midi_filename],
+        "path": [paths.portable(base / f) for f in meta.midi_filename],
         "composer": meta.canonical_composer.to_numpy(),
         "piece_id": (meta.canonical_composer + ":" + meta.canonical_title).to_numpy(),
         "split": meta.split.map(MAESTRO_SPLITS).to_numpy(),
