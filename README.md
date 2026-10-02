@@ -21,7 +21,7 @@ Only composers with at least 50 pieces are kept.
 - Features: [jSymbolic 2.2](https://sourceforge.net/projects/jmir/files/jSymbolic/) extracts 1,495 values per piece (pitch, melodic and vertical intervals, rhythm, texture, instrumentation, dynamics). music21's feature extractors are the fallback.
 - Classifiers: LightGBM, softmax regression, SVM, LDA, k-NN and an MLP, each given the same tuning budget.
 - Evaluation: train/dev/test splits grouped by musical work so that movements or copies of one piece never appear on both sides.
-- CNN: a piano-roll image classifier following the original paper's architecture.
+- CNN: a piano-roll image classifier with the original paper's architecture and training settings. We did not tune it, so its results are not tuning-matched with the feature-based models.
 
 ## Setup
 
@@ -57,7 +57,7 @@ Extract jSymbolic features for both datasets. Each run splits the files into sha
 .venv/bin/python -m composer_clf.features.extract --dataset maestro --workers 8 --xmx 4g --retry-xmx 8g --retry-workers 8
 ```
 
-Every experiment writes one folder per model and seed under `results/<experiment>/`, holding the full config (including the git commit and library versions), the metrics, the dev-set tuning table and the test predictions. Each model gets the same eight hyperparameter settings, the best one on the dev set is kept, and the test set is scored once. Seeds 0 to 4 are used unless you pass `--seeds`.
+Every experiment writes one folder per model and seed under `results/<experiment>/`, holding the full config (including the git commit and library versions), the metrics, the dev-set tuning table and the test predictions. Each of the six feature-based models gets eight hyperparameter settings, the best one on the dev set is kept, and the test set is scored once. The CNN keeps the paper's settings and only uses the dev set to pick the epoch. Seeds 0 to 4 are used unless you pass `--seeds`.
 
 ```bash
 # E1: six classifiers, splits grouped by piece
@@ -100,6 +100,6 @@ The demo is a Streamlit app. You upload a MIDI file, and it shows the predicted 
 - Data. The paper used about 10,000 MIDI files donated by Classical Archives, which were never released. We use the two public datasets above, so our composer set and our numbers are not directly comparable with theirs.
 - Splits. The paper split files at random after removing duplicate titles, so different movements or versions of one work could land in both train and test. We group every split by piece, and E2 measures what a random split would have reported instead.
 - Scaling. The paper's code fitted a separate `StandardScaler` on the dev set. Ours fits the scaler on the training set only, inside each model's pipeline.
-- Tuning. The paper tuned LightGBM by hand and the SVM by grid search. Every model here gets the same budget of eight configurations, chosen on dev macro-F1.
+- Tuning. The paper tuned LightGBM by hand and the SVM by grid search. Each feature-based model here gets the same budget of eight configurations, chosen on dev macro-F1. The CNN was not tuned, because the GPUs were taken while we ran it, so treat the CNN against LightGBM comparison as a lower bound for the CNN.
 - CNN evaluation. The paper's code set `model.training = False` before scoring, which leaves BatchNorm in training mode, and its released code never scores the test set. We call `model.eval()`, choose the epoch on the dev set and score the test set once.
 - MLP. The paper used PyTorch; we use scikit-learn's `MLPClassifier` with the same architecture and optimizer settings.
