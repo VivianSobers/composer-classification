@@ -1,0 +1,2 @@
+model,n_seeds,test_accuracy_mean,test_accuracy_std,test_macro_f1_mean,test_macro_f1_std,test_balanced_accuracy_mean,test_balanced_accuracy_std,dev_macro_f1_mean,dev_macro_f1_std,train_accuracy_mean,train_accuracy_std
+cnn,5,0.5586776859504132,0.025203224267730428,0.5663967877771909,0.0310833923988721,0.5826442171071327,0.023102668774676264,0.5230426384722204,0.0340273566548603,0.9907692307692308,0.010714144828603164
