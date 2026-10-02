@@ -84,7 +84,58 @@ done
 
 Both GPU servers were busy with other people's jobs during our runs, so we trained the CNN on CPU with 12 threads. Each seed of the augmented run took about 40 minutes. On a free GPU, pass `--device cuda` instead. The device and thread count are saved in each run's config.
 
-`python -m composer_clf.report` collects every `summary.csv` into `results/tables.md`.
+`python -m composer_clf.report` collects every `summary.csv` into `results/tables.md` and redraws the charts in `results/figures/`. Run `train_final` (see Demo) first, because the feature importance chart reads the saved model.
+
+## Results
+
+Every number below is the mean and standard deviation over seeds 0 to 4. [results/tables.md](results/tables.md) has the full table, and the charts are in [results/figures/](results/figures/).
+
+### Composer classification (E1)
+
+On the 14 Hugging Face composers, with splits grouped by piece:
+
+| Model | Test accuracy | Test macro-F1 |
+|---|---|---|
+| LightGBM | 0.787 ± 0.012 | 0.615 ± 0.033 |
+| MLP | 0.736 ± 0.018 | 0.562 ± 0.028 |
+| SVM (RBF) | 0.728 ± 0.023 | 0.543 ± 0.035 |
+| Softmax | 0.726 ± 0.020 | 0.553 ± 0.034 |
+| LDA | 0.705 ± 0.017 | 0.524 ± 0.017 |
+| k-NN | 0.627 ± 0.015 | 0.414 ± 0.021 |
+
+![Model comparison](results/figures/model_comparison.png)
+
+Macro-F1 sits well below accuracy because the classes are unbalanced and the small ones are hard. In the seed-0 confusion matrix, Bach, Maier, Scarlatti and Vivaldi are recognised 95% of the time or more, while none of the 8 Clementi or 11 Schumann test pieces is classified correctly, and two thirds of the Handel and Mendelssohn pieces are labelled Bach.
+
+![LightGBM confusion matrix](results/figures/confusion_lightgbm.png)
+
+### Leakage from random splits (E2)
+
+Splitting files at random, as the original paper did, makes every model look better than it is. LightGBM goes from 0.787 to 0.867, softmax from 0.726 to 0.831 and the SVM from 0.728 to 0.830. The extra 8 to 10 points come from movements and copies of the same work landing in both train and test.
+
+![Grouped vs random split](results/figures/split_leakage.png)
+
+### Feature groups and eras (E3)
+
+LightGBM trained on one jSymbolic group at a time reaches 0.702 with rhythm features, 0.675 with vertical intervals, 0.666 with texture, 0.639 with melodic intervals and 0.574 with instrumentation. Dropping instrumentation altogether gives 0.780, almost the same as the 0.787 with every feature, so the model is not leaning on which instruments a file uses.
+
+Classifying the era (Baroque, Classical or Romantic) is much easier: 0.960 with all features and between 0.848 and 0.879 with any single group.
+
+![Feature groups](results/figures/feature_groups.png)
+
+Among the most useful features of the final model are Microtone Prevalence and Glissando Prevalence. Classical scores contain almost no microtones or glissandi, so we suspect these pick up pitch-bend messages left by whoever sequenced a file, which would tie them to the source of the file more than to the composer.
+
+![Feature importance](results/figures/feature_importance.png)
+
+### MAESTRO: features against the piano-roll CNN (E4, E5)
+
+On MAESTRO's official split (6 composers), LightGBM again does best at 0.772 ± 0.021. LDA reaches 0.727, the MLP 0.686, softmax 0.669, the SVM 0.653 and k-NN 0.603. The official split is fixed and those four models train deterministically, so their spread over seeds is zero.
+
+The CNN is a negative result. It reaches 0.545 ± 0.045 without augmentation and 0.559 ± 0.025 with ten augmented copies of each training roll, below every feature-based model. Training accuracy is 0.91 without augmentation and 0.99 with it, so the network memorises the 650 training performances. Keep in mind that the CNN used the paper's settings with no tuning and ran on CPU, so this comparison is not tuning-matched and a tuned CNN could do better.
+
+![MAESTRO comparison](results/figures/maestro_comparison.png)
+
+![CNN dev accuracy](results/figures/cnn_dev_curves.png)
 
 ## Demo
 
