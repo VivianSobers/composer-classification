@@ -9,14 +9,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 import pandas as pd  # noqa: E402
 
 from composer_clf import paths  # noqa: E402
-
-# Validated categorical slots (light surface) and chart chrome.
-SERIES = ["#2a78d6", "#eb6834"]
-SURFACE, INK, INK_SECONDARY, INK_MUTED = "#fcfcfb", "#0b0b0b", "#52514e", "#898781"
-GRID, BASELINE = "#e1e0d9", "#c3c2b7"
-# Sequential blue ramp, steps 100 to 700.
-BLUES = ["#cde2fb", "#b7d3f6", "#9ec5f4", "#86b6ef", "#6da7ec", "#5598e7", "#3987e5", "#2a78d6",
-         "#256abf", "#1c5cab", "#184f95", "#104281", "#0d366b"]
+from composer_clf.style import BASELINE, BLUES, GRID, INK, INK_MUTED, INK_SECONDARY, SERIES, SURFACE  # noqa: E402
 MODEL_NAMES = {"lightgbm": "LightGBM", "softmax": "Softmax", "svm": "SVM (RBF)", "lda": "LDA",
                "knn": "k-NN", "mlp": "MLP", "cnn": "CNN"}
 

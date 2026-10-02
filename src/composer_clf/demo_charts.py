@@ -3,12 +3,7 @@ import altair as alt
 import numpy as np
 import pandas as pd
 
-SERIES = "#2a78d6"      # one series, so one color
-SURFACE = "#fcfcfb"
-INK_SECONDARY = "#52514e"
-INK_MUTED = "#898781"
-GRID = "#e1e0d9"
-BASELINE = "#c3c2b7"
+from composer_clf.style import BASELINE, GRID, INK_MUTED, INK_SECONDARY, SERIES, SURFACE
 
 
 def probability_chart(probs: pd.Series, top_k: int = 5) -> alt.Chart:
@@ -20,7 +15,7 @@ def probability_chart(probs: pd.Series, top_k: int = 5) -> alt.Chart:
               axis=alt.Axis(format="%", labelColor=INK_MUTED, gridColor=GRID, domain=False, ticks=False,
                             tickCount=5))
     tooltip = [alt.Tooltip("composer:N"), alt.Tooltip("probability:Q", format=".1%")]
-    bars = alt.Chart(data).mark_bar(color=SERIES, size=20, cornerRadiusEnd=4).encode(x=x, y=y, tooltip=tooltip)
+    bars = alt.Chart(data).mark_bar(color=SERIES[0], size=20, cornerRadiusEnd=4).encode(x=x, y=y, tooltip=tooltip)
     labels = alt.Chart(data).mark_text(align="left", dx=6, color=INK_SECONDARY, fontSize=12).encode(
         x=x, y=y, text=alt.Text("probability:Q", format=".0%"))
     return (alt.layer(bars, labels)
