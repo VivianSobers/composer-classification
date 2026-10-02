@@ -229,9 +229,9 @@ def plot_cnn_curves(results_dir: Path, out: Path) -> Path:
     ax.set_ylim(0, 1)
     ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(1.0))
     ax.xaxis.set_major_locator(matplotlib.ticker.MaxNLocator(integer=True))
-    ax.legend(frameon=False, loc="lower left", bbox_to_anchor=(0, 1.0), ncol=2, fontsize=9,
+    ax.legend(frameon=False, loc="lower left", bbox_to_anchor=(0, 1.0), ncol=1, fontsize=9,
               labelcolor=INK_SECONDARY, borderaxespad=0.2)
-    return _save(fig, ax, "CNN dev accuracy during training", "Epoch", out)
+    return _save(fig, ax, "CNN dev accuracy during training", "Epoch", out, title_pad=44)
 
 
 def make_figures(results_dir: Path = paths.RESULTS, bundle_path: Path = paths.MODELS / "lightgbm_hf.joblib"):
