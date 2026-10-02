@@ -27,7 +27,7 @@ def _git(*args: str) -> str:
 def environment(packages=PACKAGES) -> dict:
     """Code version and library versions, stored with every run."""
     return {"git_commit": _git("rev-parse", "HEAD"),
-            "git_dirty": bool(_git("status", "--porcelain", "--untracked-files=no")),
+            "git_dirty": bool(_git("status", "--porcelain", "--untracked-files=no", "--", ".", ":(exclude)results")),
             "python": platform.python_version(),
             "packages": {p: metadata.version(p) for p in packages}}
 

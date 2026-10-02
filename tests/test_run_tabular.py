@@ -98,3 +98,16 @@ def test_summarize_ignores_runs_outside_the_current_call(tmp_path):
     summary = run_tabular.summarize(tmp_path, models=["knn"], seeds=[0, 1]).set_index("model")
     assert list(summary.index) == ["knn"] and summary.loc["knn", "n_seeds"] == 2
     assert summary.loc["knn", "test_accuracy_mean"] == pytest.approx(0.55)
+
+
+def test_dirty_check_ignores_result_files(monkeypatch):
+    calls = []
+
+    def fake_git(*args):
+        calls.append(args)
+        return "abc" if args[0] == "rev-parse" else ""
+
+    monkeypatch.setattr(run_tabular, "_git", fake_git)
+    run_tabular.environment()
+    status = next(a for a in calls if a[0] == "status")
+    assert ":(exclude)results" in status
