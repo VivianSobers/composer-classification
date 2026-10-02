@@ -2,8 +2,8 @@
   "exp": "e1_composers",
   "dataset": "hf",
   "extractor": "jsymbolic",
-  "catalog": "/home/ccbd/composer-classification/data/processed/hf_catalog.csv",
-  "features_csv": "/home/ccbd/composer-classification/data/processed/hf_jsymbolic.csv",
+  "catalog": "data/processed/hf_catalog.csv",
+  "features_csv": "data/processed/hf_jsymbolic.csv",
   "split": "grouped",
   "features": "all",
   "task": "composer",
@@ -22,7 +22,7 @@
     3,
     4
   ],
-  "out_root": "/home/ccbd/composer-classification/results",
+  "out_root": "results",
   "seed": 3,
   "model": "softmax",
   "grid": [
@@ -52,7 +52,7 @@
     }
   ],
   "best_params": {
-    "C": 10.0
+    "C": 0.1
   },
   "labels": [
     "bach",
@@ -77,9 +77,9 @@
     "test": 602
   },
   "environment": {
-    "git_commit": "45be98db85413941907bc6f86654dfd14123e1a1",
+    "git_commit": "3f90c6307f24e54e892a31136201877bb8aac67b",
     "git_dirty": false,
-    "python": "3.13.7",
+    "python": "3.13.14",
     "packages": {
       "numpy": "2.5.3",
       "pandas": "3.0.6",
