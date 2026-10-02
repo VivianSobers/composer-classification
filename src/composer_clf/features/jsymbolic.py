@@ -17,6 +17,12 @@ def read_jsymbolic_csv(csv_path: Path) -> pd.DataFrame:
     return pd.concat([df.drop(columns=source), index], axis=1)
 
 
+def _read_all(csvs) -> pd.DataFrame:
+    """Rows of every existing jSymbolic CSV, or an empty frame with just `index`."""
+    frames = [read_jsymbolic_csv(c) for c in csvs if c.exists()]
+    return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame(columns=["index"])
+
+
 def _run_shard(shard_dir: Path, xmx: str, timeout_s: int, jar: Path, config: Path) -> Path:
     values = shard_dir.with_name(shard_dir.name + "_values.xml")
     defs = shard_dir.with_name(shard_dir.name + "_defs.xml")
@@ -39,14 +45,12 @@ def _run_batch(jobs: dict[int, Path], work_dir: Path, n_shards: int, workers: in
         shutil.copy(src, shard_dirs[k % len(shard_dirs)] / f"{index:05d}{src.suffix.lower()}")
     with ThreadPoolExecutor(workers) as pool:
         csvs = list(pool.map(lambda d: _run_shard(d, xmx, timeout_s, jar, config), shard_dirs))
-    frames = [read_jsymbolic_csv(c) for c in csvs if c.exists()]
-    return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame(columns=["index"])
+    return _read_all(csvs)
 
 
 def _collect(work_dir: Path) -> pd.DataFrame:
     """Every row any earlier run in work_dir managed to extract."""
-    frames = [read_jsymbolic_csv(c) for c in sorted(work_dir.rglob("*_values.csv"))]
-    return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame(columns=["index"])
+    return _read_all(sorted(work_dir.rglob("*_values.csv")))
 
 
 def extract_jsymbolic(midi_paths, work_dir, n_shards=48, workers=4, xmx="1g", retry_xmx="3g",
