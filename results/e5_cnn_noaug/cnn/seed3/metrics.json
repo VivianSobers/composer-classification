@@ -1,0 +1,214 @@
+{
+  "best_epoch": 6,
+  "train_accuracy": 0.9523076923076923,
+  "dev": {
+    "accuracy": 0.4845360824742268,
+    "balanced_accuracy": 0.4415429254138932,
+    "macro_precision": 0.4402071563088512,
+    "macro_recall": 0.4415429254138932,
+    "macro_f1": 0.3848941798941799,
+    "per_class": {
+      "Franz Liszt": {
+        "precision": 0.14285714285714285,
+        "recall": 0.05555555555555555,
+        "f1": 0.08,
+        "support": 18
+      },
+      "Franz Schubert": {
+        "precision": 0.16666666666666666,
+        "recall": 0.5,
+        "f1": 0.25,
+        "support": 4
+      },
+      "Fr\u00e9d\u00e9ric Chopin": {
+        "precision": 0.4745762711864407,
+        "recall": 0.9032258064516129,
+        "f1": 0.6222222222222222,
+        "support": 31
+      },
+      "Johann Sebastian Bach": {
+        "precision": 0.8571428571428571,
+        "recall": 0.8571428571428571,
+        "f1": 0.8571428571428571,
+        "support": 14
+      },
+      "Ludwig van Beethoven": {
+        "precision": 1.0,
+        "recall": 0.3333333333333333,
+        "f1": 0.5,
+        "support": 12
+      },
+      "Sergei Rachmaninoff": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 18
+      }
+    },
+    "confusion": [
+      [
+        1,
+        1,
+        15,
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        2,
+        28,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        2,
+        0,
+        12,
+        0,
+        0
+      ],
+      [
+        1,
+        4,
+        1,
+        2,
+        4,
+        0
+      ],
+      [
+        4,
+        1,
+        13,
+        0,
+        0,
+        0
+      ]
+    ],
+    "labels": [
+      "Franz Liszt",
+      "Franz Schubert",
+      "Fr\u00e9d\u00e9ric Chopin",
+      "Johann Sebastian Bach",
+      "Ludwig van Beethoven",
+      "Sergei Rachmaninoff"
+    ]
+  },
+  "test": {
+    "accuracy": 0.5371900826446281,
+    "balanced_accuracy": 0.4985834043762433,
+    "macro_precision": 0.7319023569023569,
+    "macro_recall": 0.4985834043762433,
+    "macro_f1": 0.4900392574468105,
+    "per_class": {
+      "Franz Liszt": {
+        "precision": 0.75,
+        "recall": 0.15,
+        "f1": 0.25,
+        "support": 20
+      },
+      "Franz Schubert": {
+        "precision": 0.5,
+        "recall": 0.391304347826087,
+        "f1": 0.43902439024390244,
+        "support": 23
+      },
+      "Fr\u00e9d\u00e9ric Chopin": {
+        "precision": 0.36363636363636365,
+        "recall": 0.96,
+        "f1": 0.5274725274725275,
+        "support": 25
+      },
+      "Johann Sebastian Bach": {
+        "precision": 1.0,
+        "recall": 0.8235294117647058,
+        "f1": 0.9032258064516129,
+        "support": 17
+      },
+      "Ludwig van Beethoven": {
+        "precision": 0.7777777777777778,
+        "recall": 0.5833333333333334,
+        "f1": 0.6666666666666666,
+        "support": 24
+      },
+      "Sergei Rachmaninoff": {
+        "precision": 1.0,
+        "recall": 0.08333333333333333,
+        "f1": 0.15384615384615385,
+        "support": 12
+      }
+    },
+    "confusion": [
+      [
+        3,
+        1,
+        13,
+        0,
+        3,
+        0
+      ],
+      [
+        1,
+        9,
+        12,
+        0,
+        1,
+        0
+      ],
+      [
+        0,
+        1,
+        24,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        2,
+        14,
+        0,
+        0
+      ],
+      [
+        0,
+        6,
+        4,
+        0,
+        14,
+        0
+      ],
+      [
+        0,
+        0,
+        11,
+        0,
+        0,
+        1
+      ]
+    ],
+    "labels": [
+      "Franz Liszt",
+      "Franz Schubert",
+      "Fr\u00e9d\u00e9ric Chopin",
+      "Johann Sebastian Bach",
+      "Ludwig van Beethoven",
+      "Sergei Rachmaninoff"
+    ]
+  },
+  "test_accuracy_ci95": [
+    0.4462809917355372,
+    0.6198347107438017
+  ]
+}

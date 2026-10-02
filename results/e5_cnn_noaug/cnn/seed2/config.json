@@ -1,0 +1,44 @@
+{
+  "exp": "e5_cnn_noaug",
+  "augment": false,
+  "repeats": 1,
+  "epochs": 10,
+  "lr": 0.0003,
+  "batch_size": 32,
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "out_root": "results",
+  "device": "cpu",
+  "threads": 12,
+  "seed": 2,
+  "model": "cnn",
+  "torch_threads": 12,
+  "labels": [
+    "Franz Liszt",
+    "Franz Schubert",
+    "Fr\u00e9d\u00e9ric Chopin",
+    "Johann Sebastian Bach",
+    "Ludwig van Beethoven",
+    "Sergei Rachmaninoff"
+  ],
+  "split_sizes": {
+    "train": 650,
+    "dev": 97,
+    "test": 121
+  },
+  "environment": {
+    "git_commit": "421a0b741c0c25f7b93f433c506388ac4f53fff0",
+    "git_dirty": false,
+    "python": "3.13.14",
+    "packages": {
+      "numpy": "2.5.3",
+      "torch": "2.14.1+cpu",
+      "pretty_midi": "0.2.11.post0"
+    }
+  }
+}
