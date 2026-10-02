@@ -69,12 +69,14 @@ def extract_jsymbolic(midi_paths, work_dir, n_shards=48, workers=4, xmx="1g", re
     work_dir.mkdir(parents=True, exist_ok=True)
     manifest.write_text(listing)
     found = _collect(work_dir)
-    jobs = {i: p for i, p in enumerate(midi_paths) if i not in set(found["index"])}
+    done = set(found["index"])
+    jobs = {i: p for i, p in enumerate(midi_paths) if i not in done}
     if jobs:
         run_dir = work_dir / f"run{len(list(work_dir.glob('run*'))) + 1}"
         new = _run_batch(jobs, run_dir / "pass1", n_shards, workers, xmx, timeout_s, jar, config)
         # A crashed or timed-out JVM loses its whole shard; retry those files one per JVM with more memory.
-        missing = {i: p for i, p in jobs.items() if i not in set(new["index"])}
+        new_done = set(new["index"])
+        missing = {i: p for i, p in jobs.items() if i not in new_done}
         if missing:
             retry = _run_batch(missing, run_dir / "retry", len(missing), retry_workers,
                                retry_xmx, timeout_s, jar, config)
@@ -82,7 +84,8 @@ def extract_jsymbolic(midi_paths, work_dir, n_shards=48, workers=4, xmx="1g", re
         found = pd.concat([found, new], ignore_index=True) if len(found) else new
 
     found = found.drop_duplicates("index").sort_values("index").reset_index(drop=True)
-    failed = [str(p) for i, p in enumerate(midi_paths) if i not in set(found["index"])]
+    done = set(found["index"])
+    failed = [str(p) for i, p in enumerate(midi_paths) if i not in done]
     if found.empty:
         return pd.DataFrame(columns=["path"]), failed
     path = pd.Series([str(midi_paths[i]) for i in found["index"]], name="path")
