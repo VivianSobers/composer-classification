@@ -75,12 +75,19 @@ def save_run(run_dir: Path, config: dict, metrics: dict, search: pd.DataFrame, p
     predictions.to_csv(run_dir / "predictions.csv", index=False)
 
 
-def summarize(exp_dir: Path) -> pd.DataFrame:
-    """Write runs.csv (one row per model and seed) and summary.csv (mean and std per model)."""
+def summarize(exp_dir: Path, models=None, seeds=None) -> pd.DataFrame:
+    """Write runs.csv (one row per model and seed) and summary.csv (mean and std per model).
+
+    models/seeds restrict it to the runs of the current call, so leftovers from an earlier call
+    with other settings are not averaged in.
+    """
     rows = []
     for metrics_file in sorted(Path(exp_dir).glob("*/seed*/metrics.json")):
+        model, seed = metrics_file.parent.parent.name, int(metrics_file.parent.name[4:])
+        if (models is not None and model not in models) or (seeds is not None and seed not in seeds):
+            continue
         m = json.loads(metrics_file.read_text())
-        rows.append({"model": metrics_file.parent.parent.name, "seed": int(metrics_file.parent.name[4:]),
+        rows.append({"model": model, "seed": seed,
                      "test_accuracy": m["test"]["accuracy"], "test_macro_f1": m["test"]["macro_f1"],
                      "test_balanced_accuracy": m["test"]["balanced_accuracy"],
                      "dev_macro_f1": m["dev"]["macro_f1"], "train_accuracy": m["train_accuracy"]})
@@ -132,7 +139,7 @@ def main(argv=None) -> pd.DataFrame:
             save_run(exp_dir / model / f"seed{seed}", config, metrics, search, predictions)
             print(f"{args.exp} seed={seed} {model}: dev macro-F1 {metrics['dev']['macro_f1']:.3f} "
                   f"test acc {metrics['test']['accuracy']:.3f}", flush=True)
-    summary = summarize(exp_dir)
+    summary = summarize(exp_dir, models=args.models, seeds=args.seeds)
     print(summary.to_string(index=False))
     return summary
 

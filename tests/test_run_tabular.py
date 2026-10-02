@@ -88,3 +88,13 @@ def test_config_stores_repo_relative_inputs(tmp_path, synthetic_tabular, monkeyp
     config = json.loads((tmp_path / "results" / "rel" / "knn" / "seed0" / "config.json").read_text())
     assert config["catalog"] == "data/cat.csv" and config["features_csv"] == "data/feat.csv"
     assert config["out_root"] == "results"
+
+
+def test_summarize_ignores_runs_outside_the_current_call(tmp_path):
+    for model in ("knn", "svm"):
+        for seed in range(3):
+            run_tabular.save_run(tmp_path / model / f"seed{seed}", {}, _fake_metrics(0.5 + 0.1 * seed),
+                                 pd.DataFrame(), pd.DataFrame())
+    summary = run_tabular.summarize(tmp_path, models=["knn"], seeds=[0, 1]).set_index("model")
+    assert list(summary.index) == ["knn"] and summary.loc["knn", "n_seeds"] == 2
+    assert summary.loc["knn", "test_accuracy_mean"] == pytest.approx(0.55)

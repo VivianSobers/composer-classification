@@ -80,7 +80,7 @@ def main(argv=None):
                  pd.DataFrame({"path": file_paths[sets["test"]], "y_true": truth["test"], "y_pred": preds["test"]}))
         print(f"{args.exp} seed={seed}: best epoch {best_epoch}, test acc {metrics['test']['accuracy']:.3f}",
               flush=True)
-    print(summarize(args.out_root / args.exp).to_string(index=False))
+    print(summarize(args.out_root / args.exp, models=["cnn"], seeds=args.seeds).to_string(index=False))
 
 
 if __name__ == "__main__":
