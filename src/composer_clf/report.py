@@ -201,24 +201,30 @@ def plot_importance(bundle_path: Path, out: Path, top: int = 20) -> Path:
     return _save(fig, ax, f"Top {len(gain)} features of the LightGBM model", "Total information gain", out)
 
 
-CNN_RUNS = {"e5_cnn_noaug": "CNN", "e5_cnn_aug10": "CNN + augmentation"}
+CNN_RUNS = {"e5_cnn_noaug": "CNN, paper settings (not tuned)",
+            "e5_cnn_aug10": "CNN + augmentation, paper settings (not tuned)"}
 
 
-def plot_maestro_comparison(results_dir: Path, out: Path) -> Path:
-    """Test accuracy on MAESTRO's official split: jSymbolic models (E4) next to the piano-roll CNN (E5)."""
+def maestro_rows(results_dir: Path) -> pd.DataFrame:
+    """E4 tabular models (tuned) and E5 CNN settings (fixed) on MAESTRO, labeled so the tuning gap shows."""
     results_dir = Path(results_dir)
     rows = []
     for r in pd.read_csv(results_dir / "e4_maestro_tabular" / "summary.csv").itertuples():
-        rows.append({"label": MODEL_NAMES.get(r.model, r.model), "series": "Test accuracy",
-                     "mean": r.test_accuracy_mean, "std": r.test_accuracy_std})
+        rows.append({"label": f"{MODEL_NAMES.get(r.model, r.model)} (8 configs tuned on dev)",
+                     "series": "Test accuracy", "mean": r.test_accuracy_mean, "std": r.test_accuracy_std})
     for exp, label in CNN_RUNS.items():
         summary = results_dir / exp / "summary.csv"
         if summary.exists():
             r = pd.read_csv(summary).iloc[0]
             rows.append({"label": label, "series": "Test accuracy", "mean": r.test_accuracy_mean,
                          "std": r.test_accuracy_std})
-    rows = pd.DataFrame(rows).sort_values("mean", ascending=False)
-    return _dot_plot(rows, ["Test accuracy"], "MAESTRO, 6 composers, official split",
+    return pd.DataFrame(rows).sort_values("mean", ascending=False)
+
+
+def plot_maestro_comparison(results_dir: Path, out: Path) -> Path:
+    """Test accuracy on MAESTRO's official split: jSymbolic models (E4) next to the piano-roll CNN (E5)."""
+    return _dot_plot(maestro_rows(results_dir), ["Test accuracy"],
+                     "MAESTRO, 6 composers, official split (CNN not tuning-matched)",
                      "Test accuracy, mean ± std over seeds", out)
 
 

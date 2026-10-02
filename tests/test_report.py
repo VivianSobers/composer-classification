@@ -120,3 +120,13 @@ def test_make_figures_skips_missing_experiments(tmp_path):
     made = make_figures(tmp_path, bundle_path=tmp_path / "missing.joblib")
     assert sorted(p.name for p in made) == ["confusion_lightgbm.png", "model_comparison.png"]
     assert all(_is_png(p) for p in made)
+
+
+def test_maestro_rows_mark_the_cnn_as_untuned(tmp_path):
+    from composer_clf.report import maestro_rows
+
+    _fake_exp(tmp_path, "e4_maestro_tabular", ["lightgbm"])
+    _fake_exp(tmp_path, "e5_cnn_noaug", ["cnn"], acc=0.5)
+    labels = list(maestro_rows(tmp_path).label)
+    assert "LightGBM (8 configs tuned on dev)" in labels
+    assert "CNN, paper settings (not tuned)" in labels
