@@ -77,10 +77,12 @@ done
 # E4: the six classifiers on MAESTRO's official split
 .venv/bin/python -m composer_clf.run_tabular --exp e4_maestro_tabular --dataset maestro --split official
 
-# E5: the piano-roll CNN on MAESTRO (run on a GPU)
-.venv/bin/python -m composer_clf.cnn.run --exp e5_cnn_noaug --repeats 1
-.venv/bin/python -m composer_clf.cnn.run --exp e5_cnn_aug10 --augment --repeats 10
+# E5: the piano-roll CNN on MAESTRO
+.venv/bin/python -m composer_clf.cnn.run --exp e5_cnn_noaug --repeats 1 --device cpu --threads 12
+.venv/bin/python -m composer_clf.cnn.run --exp e5_cnn_aug10 --augment --repeats 10 --device cpu --threads 12
 ```
+
+Both GPU servers were busy with other people's jobs during our runs, so we trained the CNN on CPU with 12 threads. Each seed of the augmented run took about 40 minutes. On a free GPU, pass `--device cuda` instead. The device and thread count are saved in each run's config.
 
 `python -m composer_clf.report` collects every `summary.csv` into `results/tables.md`.
 
