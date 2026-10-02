@@ -54,8 +54,8 @@ def _figure(height: float):
     return fig, ax
 
 
-def _save(fig, ax, title: str, xlabel: str, out: Path) -> Path:
-    ax.set_title(title, loc="left", color=INK, fontsize=11, pad=26)
+def _save(fig, ax, title: str, xlabel: str, out: Path, title_pad: int = 26) -> Path:
+    ax.set_title(title, loc="left", color=INK, fontsize=11, pad=title_pad)
     ax.set_xlabel(xlabel, color=INK_SECONDARY, fontsize=9)
     for label in ax.get_yticklabels():
         label.set_color(INK_SECONDARY)
@@ -145,15 +145,8 @@ def plot_confusion(results_dir: Path, out: Path, exp: str = "e1_composers", mode
     bar.outline.set_visible(False)
     bar.ax.tick_params(colors=INK_MUTED, length=0, labelsize=8)
     bar.set_label("Share of the true composer's test pieces", color=INK_SECONDARY, fontsize=8)
-    ax.set_title(f"{MODEL_NAMES.get(model, model)} test predictions (seed {seed})", loc="left", color=INK,
-                 fontsize=11, pad=12)
-    ax.set_xlabel("Predicted composer", color=INK_SECONDARY, fontsize=9)
-    out = Path(out)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    fig.tight_layout()
-    fig.savefig(out, facecolor=SURFACE)
-    plt.close(fig)
-    return out
+    return _save(fig, ax, f"{MODEL_NAMES.get(model, model)} test predictions (seed {seed})",
+                 "Predicted composer", out, title_pad=12)
 
 
 GROUP_NAMES = {"all": "All features", "rhythm": "Rhythm", "melodic": "Melodic intervals",
