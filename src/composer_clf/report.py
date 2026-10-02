@@ -210,7 +210,7 @@ def maestro_rows(results_dir: Path) -> pd.DataFrame:
 def plot_maestro_comparison(results_dir: Path, out: Path) -> Path:
     """Test accuracy on MAESTRO's official split: jSymbolic models (E4) next to the piano-roll CNN (E5)."""
     return _dot_plot(maestro_rows(results_dir), ["Test accuracy"],
-                     "MAESTRO, 6 composers, official split (CNN not tuning-matched)",
+                     "MAESTRO, 6 composers, official split",
                      "Test accuracy, mean ± std over seeds", out)
 
 
