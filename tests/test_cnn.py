@@ -61,15 +61,30 @@ def _toy_catalog(tmp_path, midi_factory):
 
 
 def test_load_rolls_builds_and_reuses_cache(tmp_path, midi_factory):
+    import pandas as pd
+
     from composer_clf.cnn.run import load_rolls
 
     cat = _toy_catalog(tmp_path, midi_factory)
-    X, y, split, paths_, labels = load_rolls(tmp_path / "rolls.npz", cat)
+    cache = tmp_path / "rolls.npz"
+    X, y, split, paths_, labels = load_rolls(cache, cat)
     assert X.shape == (12, 64, 1536) and labels == ["A", "B"]
     assert list(y[:2]) == [1, 0] and split[2] == "dev"
-    cat.write_text("broken")                       # second call must not read the catalog again
-    X2, *_ = load_rolls(tmp_path / "rolls.npz", cat)
-    assert (X2 == X).all()
+    built = cache.stat().st_mtime_ns
+    load_rolls(cache, cat)
+    assert cache.stat().st_mtime_ns == built                  # same catalog: cache reused
+
+
+def test_load_rolls_rebuilds_when_catalog_changes(tmp_path, midi_factory):
+    import pandas as pd
+
+    from composer_clf.cnn.run import load_rolls
+
+    cat = _toy_catalog(tmp_path, midi_factory)
+    load_rolls(tmp_path / "rolls.npz", cat)
+    pd.read_csv(cat).iloc[:10].to_csv(cat, index=False)       # e.g. a different composer filter
+    X, *_ = load_rolls(tmp_path / "rolls.npz", cat)
+    assert X.shape[0] == 10
 
 
 def test_cnn_command_writes_runs(tmp_path, midi_factory, monkeypatch):
@@ -92,3 +107,12 @@ def test_cnn_command_writes_runs(tmp_path, midi_factory, monkeypatch):
     assert config["device"] == "cpu" and config["torch_threads"] >= 1
     assert len(pd.read_csv(out / "cnn" / "seed0" / "dev_search.csv")) == 2
     assert pd.read_csv(out / "summary.csv").model.tolist() == ["cnn"]
+
+
+def test_load_rolls_rebuilds_legacy_cache_without_digest(tmp_path, midi_factory):
+    from composer_clf.cnn.run import load_rolls
+
+    cat = _toy_catalog(tmp_path, midi_factory)
+    np.savez_compressed(tmp_path / "rolls.npz", X=np.zeros((1, 64, 1536), np.uint8))   # written by older code
+    X, *_ = load_rolls(tmp_path / "rolls.npz", cat)
+    assert X.shape[0] == 12

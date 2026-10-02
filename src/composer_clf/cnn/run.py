@@ -1,5 +1,6 @@
 """E5: piano-roll CNN on MAESTRO's official split."""
 import argparse
+import hashlib
 from pathlib import Path
 
 import numpy as np
@@ -16,17 +17,24 @@ CACHE = paths.DATA_PROCESSED / "maestro_rolls.npz"
 CATALOG = paths.DATA_PROCESSED / "maestro_catalog.csv"
 
 
+def catalog_digest(catalog_csv: Path) -> str:
+    return hashlib.md5(Path(catalog_csv).read_bytes()).hexdigest()
+
+
 def load_rolls(cache: Path = CACHE, catalog_csv: Path = CATALOG):
-    """Rolls, label indices, splits, paths and label names; built once, then read from cache."""
-    if not Path(cache).exists():
-        cat = pd.read_csv(catalog_csv)
-        labels = sorted(cat.composer.unique())
-        X = np.stack([midi_to_roll(paths.resolve(p)) for p in cat.path])
-        y = cat.composer.map({c: i for i, c in enumerate(labels)}).to_numpy()
-        np.savez_compressed(cache, X=X, y=y, split=cat.split.to_numpy(), path=cat.path.to_numpy(),
-                            labels=np.array(labels))
-    data = np.load(cache, allow_pickle=True)
-    return data["X"], data["y"], data["split"], data["path"], [str(s) for s in data["labels"]]
+    """Rolls, label indices, splits, paths and label names, cached until the catalog changes."""
+    digest = catalog_digest(catalog_csv)
+    if Path(cache).exists():
+        data = np.load(cache, allow_pickle=True)
+        if "catalog_md5" in data.files and str(data["catalog_md5"]) == digest:
+            return data["X"], data["y"], data["split"], data["path"], [str(s) for s in data["labels"]]
+    cat = pd.read_csv(catalog_csv)
+    labels = sorted(cat.composer.unique())
+    X = np.stack([midi_to_roll(paths.resolve(p)) for p in cat.path])
+    y = cat.composer.map({c: i for i, c in enumerate(labels)}).to_numpy()
+    np.savez_compressed(cache, X=X, y=y, split=cat.split.to_numpy(), path=cat.path.to_numpy(),
+                        labels=np.array(labels), catalog_md5=np.array(digest))
+    return X, y, cat.split.to_numpy(), cat.path.to_numpy(), labels
 
 
 def main(argv=None):
@@ -64,6 +72,7 @@ def main(argv=None):
         config = {**vars(args), "out_root": portable(args.out_root), "seed": seed, "model": "cnn",
                   "device": torch.cuda.get_device_name() if device == "cuda" else "cpu",
                   "torch_threads": torch.get_num_threads(),
+                  "catalog": portable(CATALOG), "catalog_md5": catalog_digest(CATALOG),
                   "labels": labels, "split_sizes": {s: int(m.sum()) for s, m in sets.items()},
                   "environment": env}
         # For the CNN the dev search is the per-epoch selection, so the history goes in dev_search.csv.
