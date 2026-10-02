@@ -58,6 +58,20 @@ def piece_id(filename: str) -> str:
     return f"{composer}:{name or 'unnamed'}"
 
 
+def merge_prefix_pieces(piece_ids: pd.Series) -> pd.Series:
+    """Map each piece ID onto the shortest same-composer ID that is a word prefix of it.
+
+    Catches movement names the parser misses ("water_music_1_overture" -> "water_music").
+    Over-merging distinct works only makes the split stricter, never leakier.
+    """
+    unique = sorted(set(piece_ids), key=len)
+    root = {}
+    for pid in unique:
+        root[pid] = next((root[shorter] for shorter in unique
+                          if len(shorter) < len(pid) and pid.startswith(shorter + "_")), pid)
+    return piece_ids.map(root)
+
+
 def _repo_path(p: Path) -> str:
     """Repo-relative path when inside the repo, else the absolute path."""
     p = Path(p).resolve()
@@ -122,6 +136,7 @@ def main(argv=None) -> None:
     paths.DATA_PROCESSED.mkdir(parents=True, exist_ok=True)
 
     raw = build_hf_catalog(paths.HF_DIR)
+    raw["piece_id"] = merge_prefix_pieces(raw.piece_id)
     deduped = deduplicate(raw)
     kept, summary = select_composers(deduped, args.min_files, args.min_pieces)
     kept.to_csv(paths.DATA_PROCESSED / "hf_catalog.csv", index=False)

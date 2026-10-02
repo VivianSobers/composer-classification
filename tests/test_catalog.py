@@ -102,3 +102,23 @@ def test_build_hf_catalog_reads_files(midi_factory):
     assert row.composer == "handel" and row.piece_id == "handel:hwv56"
     assert row.md5 == hashlib.md5(a.read_bytes()).hexdigest()
     assert len(cat) == 2
+
+
+def test_merge_prefix_pieces_groups_movements_with_their_work():
+    from composer_clf.data.catalog import merge_prefix_pieces
+
+    ids = pd.Series(["handel:water_music", "handel:water_music_1_overture", "handel:water_music_allegro_2",
+                     "beethoven:piano_sonata_n27", "beethoven:piano_sonata_n27_3rd_mov",
+                     "haydn:piano_piece_n1", "haydn:piano_piece_n10", "mozart:water_music_x"])
+    out = list(merge_prefix_pieces(ids))
+    assert out[:3] == ["handel:water_music"] * 3
+    assert out[3:5] == ["beethoven:piano_sonata_n27"] * 2
+    assert out[5:7] == ["haydn:piano_piece_n1", "haydn:piano_piece_n10"]   # n1 is not a word prefix of n10
+    assert out[7] == "mozart:water_music_x"                                 # other composer untouched
+
+
+def test_merge_prefix_pieces_follows_chains():
+    from composer_clf.data.catalog import merge_prefix_pieces
+
+    out = merge_prefix_pieces(pd.Series(["a:x_y_z", "a:x", "a:x_y"]))
+    assert list(out) == ["a:x", "a:x", "a:x"]
