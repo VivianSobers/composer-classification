@@ -2,8 +2,8 @@
   "exp": "e3_era_all",
   "dataset": "hf",
   "extractor": "jsymbolic",
-  "catalog": "/home/viviansobers/Documents/SEM 5/ML/ML Project/data/processed/hf_catalog.csv",
-  "features_csv": "/home/viviansobers/Documents/SEM 5/ML/ML Project/data/processed/hf_jsymbolic.csv",
+  "catalog": "data/processed/hf_catalog.csv",
+  "features_csv": "data/processed/hf_jsymbolic.csv",
   "split": "grouped",
   "features": "all",
   "task": "era",
@@ -17,7 +17,7 @@
     3,
     4
   ],
-  "out_root": "/home/viviansobers/Documents/SEM 5/ML/ML Project/results",
+  "out_root": "results",
   "seed": 4,
   "model": "lightgbm",
   "grid": [
@@ -79,7 +79,7 @@
     "test": 522
   },
   "environment": {
-    "git_commit": "45be98db85413941907bc6f86654dfd14123e1a1",
+    "git_commit": "3f90c6307f24e54e892a31136201877bb8aac67b",
     "git_dirty": false,
     "python": "3.13.14",
     "packages": {
