@@ -67,3 +67,14 @@ def test_resume_only_runs_missing_files(tmp_path, midi_factory):
     feats, failed = extract_jsymbolic(files, work, n_shards=1, workers=1, resume=True)
     assert failed == [] and len(feats) == 2
     assert sorted(p.name for p in work.iterdir()) == runs_before   # nothing left to do, nothing re-run
+
+
+def test_resume_refuses_a_different_file_list(tmp_path, midi_factory):
+    from composer_clf.features.jsymbolic import extract_jsymbolic
+
+    a, b = midi_factory("a.mid"), midi_factory("b.mid")
+    no_jar = tmp_path / "missing.jar"                  # java exits at once; only the bookkeeping runs
+    extract_jsymbolic([a, b], tmp_path / "work", n_shards=1, workers=1, jar=no_jar)
+    with pytest.raises(ValueError, match="different file list"):
+        extract_jsymbolic([b, a], tmp_path / "work", n_shards=1, workers=1, jar=no_jar, resume=True)
+    extract_jsymbolic([a, b], tmp_path / "work", n_shards=1, workers=1, jar=no_jar, resume=True)  # same list is fine

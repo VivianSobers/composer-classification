@@ -61,10 +61,17 @@ def extract_jsymbolic(midi_paths, work_dir, n_shards=48, workers=4, xmx="1g", re
     work_dir = Path(work_dir)
     if work_dir.exists() and not resume:
         shutil.rmtree(work_dir)
-    found = _collect(work_dir) if work_dir.exists() else pd.DataFrame(columns=["index"])
+    # Rows are matched to files by position, so a resume is only valid for the identical file list.
+    manifest = work_dir / "manifest.txt"
+    listing = "".join(f"{p}\n" for p in midi_paths)
+    if manifest.exists() and manifest.read_text() != listing:
+        raise ValueError(f"{work_dir} was extracted for a different file list; rerun without resume")
+    work_dir.mkdir(parents=True, exist_ok=True)
+    manifest.write_text(listing)
+    found = _collect(work_dir)
     jobs = {i: p for i, p in enumerate(midi_paths) if i not in set(found["index"])}
     if jobs:
-        run_dir = work_dir / f"run{len(list(work_dir.glob('run*'))) + 1}" if work_dir.exists() else work_dir / "run1"
+        run_dir = work_dir / f"run{len(list(work_dir.glob('run*'))) + 1}"
         new = _run_batch(jobs, run_dir / "pass1", n_shards, workers, xmx, timeout_s, jar, config)
         # A crashed or timed-out JVM loses its whole shard; retry those files one per JVM with more memory.
         missing = {i: p for i, p in jobs.items() if i not in set(new["index"])}
