@@ -1,6 +1,6 @@
 # Composer Classification from Symbolic Music
 
-UE24CS352A Machine Learning mini-project, PES University, Section C, Team 10.
+UE24CS352A Machine Learning mini-project, PES University, Section C, Team 10. The two-page write-up is [docs/writeup.pdf](docs/writeup.pdf).
 
 - Vivian Sobers E (PES1UG24CS901)
 - C Nitish (PES1UG25CS809)
